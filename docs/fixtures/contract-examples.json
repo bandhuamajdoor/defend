@@ -607,5 +607,70 @@
         }
       ]
     }
+  },
+  {
+    "name": "example-27-CoachResponse",
+    "schema": "CoachResponse",
+    "value": {
+      "verdict": "needs_work",
+      "summary": "Name one observable step, then explain the state change.",
+      "strengths": [],
+      "improvements": [
+        "Trace quantity through the component before describing the displayed total."
+      ],
+      "exampleAnswer": null,
+      "recommendation": "retry",
+      "nextQuestion": "What changes when setQuantity runs?",
+      "evidenceIds": []
+    }
+  },
+  {
+    "name": "example-28-Coaching",
+    "schema": "Coaching",
+    "value": {
+      "verdict": "needs_work",
+      "summary": "Name one observable step, then explain the state change.",
+      "strengths": [],
+      "improvements": [
+        "Trace quantity through the component before describing the displayed total."
+      ],
+      "exampleAnswer": null,
+      "recommendation": "retry",
+      "nextQuestion": "What changes when setQuantity runs?",
+      "evidenceIds": [],
+      "id": "00000000-0000-4000-8000-000000000030",
+      "answerId": "00000000-0000-4000-8000-000000000008",
+      "questionId": "00000000-0000-4000-8000-000000000007",
+      "topicId": "topic-3",
+      "criterionId": "implementation",
+      "source": "guided_sample"
+    }
+  },
+  {
+    "name": "example-29-EvidenceList",
+    "schema": "EvidenceList",
+    "value": {
+      "evidence": []
+    }
+  },
+  {
+    "name": "example-30-Capabilities",
+    "schema": "Capabilities",
+    "value": {
+      "provider": "mock",
+      "mode": "guided",
+      "label": "Guided practice",
+      "model": null,
+      "consentVersion": "local-coach-v2",
+      "dataDisclosure": "The known sample uses a guided checklist. No model calls are made.",
+      "ready": true,
+      "uploadLimits": {
+        "files": 500,
+        "fileBytes": 262144,
+        "totalBytes": 8388608,
+        "totalCharacters": 2000000,
+        "requestBytes": 25165824
+      }
+    }
   }
 ]

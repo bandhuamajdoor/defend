@@ -19,7 +19,7 @@
     "setup": "node scripts/setup.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "vitest run tests/domain.test.ts",
+    "test": "vitest run tests/domain.test.ts tests/coaching.test.ts",
     "test:integration": "node --env-file-if-exists=.env.local node_modules/vitest/vitest.mjs run tests/integration.test.ts",
     "test:e2e": "node --env-file-if-exists=.env.local scripts/browser-smoke.mjs",
     "eval": "tsx --env-file-if-exists=.env.local evals/run.ts",
@@ -35,7 +35,8 @@
     "next": "16.4.3",
     "pg": "8.16.3",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "typescript": "5.9.3"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.0",
@@ -51,7 +52,6 @@
     "prettier": "3.8.1",
     "prisma": "7.10.1",
     "tsx": "4.23.15",
-    "typescript": "5.9.3",
     "vitest": "4.1.12"
   }
 }

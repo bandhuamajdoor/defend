@@ -35,9 +35,53 @@
           },
           "maxItems": 2,
           "minItems": 2
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "indexedFiles": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "indexedExcerpts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "reviewedExcerpts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "strategy": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "notes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "minItems": 0,
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "indexedFiles",
+            "indexedExcerpts",
+            "reviewedExcerpts",
+            "strategy",
+            "notes"
+          ]
         }
       },
-      "required": ["summary", "contribution", "uncertainties", "topics"]
+      "required": [
+        "summary",
+        "contribution",
+        "uncertainties",
+        "topics"
+      ]
     },
     "ConsentRequest": {
       "type": "object",
@@ -46,9 +90,16 @@
         "consent": {
           "type": "boolean",
           "const": true
+        },
+        "consentVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         }
       },
-      "required": ["consent"]
+      "required": [
+        "consent"
+      ]
     },
     "UUID": {
       "type": "string",
@@ -80,7 +131,12 @@
     },
     "CriterionId": {
       "type": "string",
-      "enum": ["implementation", "design", "failure", "limits"]
+      "enum": [
+        "implementation",
+        "design",
+        "failure",
+        "limits"
+      ]
     },
     "Evidence": {
       "type": "object",
@@ -144,10 +200,13 @@
         "text": {
           "type": "string",
           "minLength": 0,
-          "maxLength": 120000
+          "maxLength": 262144
         }
       },
-      "required": ["path", "text"]
+      "required": [
+        "path",
+        "text"
+      ]
     },
     "ProjectUpload": {
       "type": "object",
@@ -177,11 +236,22 @@
           "items": {
             "$ref": "#/$defs/SourceInput"
           },
-          "maxItems": 20,
+          "maxItems": 500,
           "minItems": 1
+        },
+        "consentVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         }
       },
-      "required": ["title", "brief", "contribution", "consent", "files"]
+      "required": [
+        "title",
+        "brief",
+        "contribution",
+        "consent",
+        "files"
+      ]
     },
     "Topic": {
       "type": "object",
@@ -260,9 +330,53 @@
           },
           "maxItems": 5,
           "minItems": 5
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "indexedFiles": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "indexedExcerpts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "reviewedExcerpts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "strategy": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "notes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "minItems": 0,
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "indexedFiles",
+            "indexedExcerpts",
+            "reviewedExcerpts",
+            "strategy",
+            "notes"
+          ]
         }
       },
-      "required": ["summary", "contribution", "uncertainties", "topics"]
+      "required": [
+        "summary",
+        "contribution",
+        "uncertainties",
+        "topics"
+      ]
     },
     "Plan": {
       "type": "object",
@@ -283,7 +397,12 @@
           "$ref": "#/$defs/PreparedPlan"
         }
       },
-      "required": ["id", "revision", "confirmed", "content"]
+      "required": [
+        "id",
+        "revision",
+        "confirmed",
+        "content"
+      ]
     },
     "Version": {
       "type": "object",
@@ -299,7 +418,11 @@
         },
         "status": {
           "type": "string",
-          "enum": ["preparing", "ready", "failed"]
+          "enum": [
+            "preparing",
+            "ready",
+            "failed"
+          ]
         },
         "files": {
           "type": "array",
@@ -325,9 +448,14 @@
                 "minimum": 1
               }
             },
-            "required": ["id", "path", "byteSize", "lineCount"]
+            "required": [
+              "id",
+              "path",
+              "byteSize",
+              "lineCount"
+            ]
           },
-          "maxItems": 20,
+          "maxItems": 500,
           "minItems": 1
         },
         "plan": {
@@ -341,7 +469,13 @@
           ]
         }
       },
-      "required": ["id", "ordinal", "status", "files", "plan"]
+      "required": [
+        "id",
+        "ordinal",
+        "status",
+        "files",
+        "plan"
+      ]
     },
     "ProjectSummary": {
       "type": "object",
@@ -365,7 +499,12 @@
           "format": "date-time"
         }
       },
-      "required": ["id", "title", "createdAt", "expiresAt"]
+      "required": [
+        "id",
+        "title",
+        "createdAt",
+        "expiresAt"
+      ]
     },
     "Project": {
       "type": "object",
@@ -397,7 +536,13 @@
           "minItems": 1
         }
       },
-      "required": ["id", "title", "createdAt", "expiresAt", "versions"]
+      "required": [
+        "id",
+        "title",
+        "createdAt",
+        "expiresAt",
+        "versions"
+      ]
     },
     "ProjectList": {
       "type": "object",
@@ -412,7 +557,9 @@
           "minItems": 0
         }
       },
-      "required": ["projects"]
+      "required": [
+        "projects"
+      ]
     },
     "ConfirmRequest": {
       "type": "object",
@@ -437,7 +584,12 @@
           "maxLength": 2000
         }
       },
-      "required": ["versionId", "expectedRevision", "summary", "contribution"]
+      "required": [
+        "versionId",
+        "expectedRevision",
+        "summary",
+        "contribution"
+      ]
     },
     "Confirmation": {
       "type": "object",
@@ -464,7 +616,13 @@
           "const": true
         }
       },
-      "required": ["projectId", "versionId", "planId", "revision", "confirmed"]
+      "required": [
+        "projectId",
+        "versionId",
+        "planId",
+        "revision",
+        "confirmed"
+      ]
     },
     "Guest": {
       "type": "object",
@@ -479,7 +637,10 @@
           "format": "date-time"
         }
       },
-      "required": ["ownerId", "expiresAt"]
+      "required": [
+        "ownerId",
+        "expiresAt"
+      ]
     },
     "Operation": {
       "type": "object",
@@ -513,10 +674,17 @@
         },
         "status": {
           "type": "string",
-          "enum": ["accepted"]
+          "enum": [
+            "accepted"
+          ]
         }
       },
-      "required": ["resourceId", "revision", "jobId", "status"]
+      "required": [
+        "resourceId",
+        "revision",
+        "jobId",
+        "status"
+      ]
     },
     "Deletion": {
       "type": "object",
@@ -528,10 +696,15 @@
         },
         "status": {
           "type": "string",
-          "enum": ["accepted"]
+          "enum": [
+            "accepted"
+          ]
         }
       },
-      "required": ["receiptId", "status"]
+      "required": [
+        "receiptId",
+        "status"
+      ]
     },
     "SessionCreate": {
       "type": "object",
@@ -554,7 +727,12 @@
           "minimum": 0
         }
       },
-      "required": ["projectId", "versionId", "planId", "expectedRevision"]
+      "required": [
+        "projectId",
+        "versionId",
+        "planId",
+        "expectedRevision"
+      ]
     },
     "AnswerRequest": {
       "type": "object",
@@ -578,7 +756,12 @@
           "maxLength": 8000
         }
       },
-      "required": ["questionId", "turnId", "expectedRevision", "text"]
+      "required": [
+        "questionId",
+        "turnId",
+        "expectedRevision",
+        "text"
+      ]
     },
     "ControlRequest": {
       "type": "object",
@@ -586,14 +769,23 @@
       "properties": {
         "action": {
           "type": "string",
-          "enum": ["pause", "resume", "skip", "clarify", "end"]
+          "enum": [
+            "pause",
+            "resume",
+            "skip",
+            "clarify",
+            "end"
+          ]
         },
         "expectedRevision": {
           "type": "integer",
           "minimum": 0
         }
       },
-      "required": ["action", "expectedRevision"]
+      "required": [
+        "action",
+        "expectedRevision"
+      ]
     },
     "Question": {
       "type": "object",
@@ -615,7 +807,11 @@
         },
         "kind": {
           "type": "string",
-          "enum": ["opening", "follow_up", "clarification"]
+          "enum": [
+            "opening",
+            "follow_up",
+            "clarification"
+          ]
         },
         "evidence": {
           "type": "array",
@@ -630,7 +826,14 @@
           "format": "date-time"
         }
       },
-      "required": ["id", "topicId", "text", "kind", "evidence", "createdAt"]
+      "required": [
+        "id",
+        "topicId",
+        "text",
+        "kind",
+        "evidence",
+        "createdAt"
+      ]
     },
     "PublicTurn": {
       "type": "object",
@@ -642,7 +845,11 @@
         },
         "role": {
           "type": "string",
-          "enum": ["interviewer", "student", "system"]
+          "enum": [
+            "interviewer",
+            "student",
+            "system"
+          ]
         },
         "questionId": {
           "anyOf": [
@@ -665,7 +872,13 @@
           "format": "date-time"
         }
       },
-      "required": ["id", "role", "questionId", "text", "createdAt"]
+      "required": [
+        "id",
+        "role",
+        "questionId",
+        "text",
+        "createdAt"
+      ]
     },
     "Session": {
       "type": "object",
@@ -685,7 +898,10 @@
         },
         "mode": {
           "type": "string",
-          "enum": ["normal", "retest"]
+          "enum": [
+            "normal",
+            "retest"
+          ]
         },
         "status": {
           "$ref": "#/$defs/SessionStatus"
@@ -743,6 +959,44 @@
               "type": "null"
             }
           ]
+        },
+        "coaching": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Coaching"
+          },
+          "minItems": 0,
+          "maxItems": 12
+        },
+        "engine": {
+          "type": "string",
+          "enum": [
+            "guided_sample",
+            "structure_only",
+            "groq",
+            "ollama",
+            "legacy_mock"
+          ]
+        },
+        "topicProgress": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "current": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            }
+          },
+          "required": [
+            "current",
+            "total"
+          ]
         }
       },
       "required": [
@@ -779,7 +1033,13 @@
         },
         "status": {
           "type": "string",
-          "enum": ["queued", "running", "succeeded", "failed", "cancelled"]
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ]
         },
         "attempts": {
           "type": "integer",
@@ -842,7 +1102,11 @@
         },
         "outcome": {
           "type": "string",
-          "enum": ["supported", "contradicted", "unresolved"]
+          "enum": [
+            "supported",
+            "contradicted",
+            "unresolved"
+          ]
         },
         "evidenceIds": {
           "type": "array",
@@ -874,7 +1138,12 @@
       "properties": {
         "action": {
           "type": "string",
-          "enum": ["ask", "follow_up", "advance_topic", "finish"]
+          "enum": [
+            "ask",
+            "follow_up",
+            "advance_topic",
+            "finish"
+          ]
         },
         "topicId": {
           "anyOf": [
@@ -945,7 +1214,10 @@
           "maxLength": 2000
         }
       },
-      "required": ["answerId", "quote"]
+      "required": [
+        "answerId",
+        "quote"
+      ]
     },
     "CriterionAssessment": {
       "type": "object",
@@ -978,7 +1250,11 @@
         },
         "confidence": {
           "type": "string",
-          "enum": ["low", "medium", "high"]
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
         }
       },
       "required": [
@@ -1007,7 +1283,11 @@
         },
         "outcome": {
           "type": "string",
-          "enum": ["supported", "contradicted", "unresolved"]
+          "enum": [
+            "supported",
+            "contradicted",
+            "unresolved"
+          ]
         },
         "title": {
           "type": "string",
@@ -1184,7 +1464,10 @@
           "minItems": 1
         }
       },
-      "required": ["reportId", "conceptIds"]
+      "required": [
+        "reportId",
+        "conceptIds"
+      ]
     },
     "FeedbackRequest": {
       "type": "object",
@@ -1200,7 +1483,10 @@
           "maxLength": 2000
         }
       },
-      "required": ["findingId", "note"]
+      "required": [
+        "findingId",
+        "note"
+      ]
     },
     "FeedbackReceipt": {
       "type": "object",
@@ -1212,10 +1498,15 @@
         },
         "status": {
           "type": "string",
-          "enum": ["recorded"]
+          "enum": [
+            "recorded"
+          ]
         }
       },
-      "required": ["id", "status"]
+      "required": [
+        "id",
+        "status"
+      ]
     },
     "Error": {
       "type": "object",
@@ -1258,10 +1549,17 @@
               "minimum": 0
             }
           },
-          "required": ["code", "message", "requestId", "retryable"]
+          "required": [
+            "code",
+            "message",
+            "requestId",
+            "retryable"
+          ]
         }
       },
-      "required": ["error"]
+      "required": [
+        "error"
+      ]
     },
     "Health": {
       "type": "object",
@@ -1269,10 +1567,15 @@
       "properties": {
         "status": {
           "type": "string",
-          "enum": ["ok", "unavailable"]
+          "enum": [
+            "ok",
+            "unavailable"
+          ]
         }
       },
-      "required": ["status"]
+      "required": [
+        "status"
+      ]
     },
     "ProjectSessionSummary": {
       "type": "object",
@@ -1286,14 +1589,22 @@
         },
         "mode": {
           "type": "string",
-          "enum": ["normal", "retest"]
+          "enum": [
+            "normal",
+            "retest"
+          ]
         },
         "createdAt": {
           "type": "string",
           "format": "date-time"
         }
       },
-      "required": ["id", "status", "mode", "createdAt"]
+      "required": [
+        "id",
+        "status",
+        "mode",
+        "createdAt"
+      ]
     },
     "ProjectSessionList": {
       "type": "object",
@@ -1308,7 +1619,311 @@
           "maxItems": 100
         }
       },
-      "required": ["sessions"]
+      "required": [
+        "sessions"
+      ]
+    },
+    "CoachResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "needs_work",
+            "promising",
+            "strong",
+            "uncertain"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 800
+          },
+          "maxItems": 3,
+          "minItems": 0
+        },
+        "improvements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 800
+          },
+          "maxItems": 3,
+          "minItems": 0
+        },
+        "exampleAnswer": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recommendation": {
+          "type": "string",
+          "enum": [
+            "retry",
+            "advance"
+          ]
+        },
+        "nextQuestion": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        }
+      },
+      "required": [
+        "verdict",
+        "summary",
+        "strengths",
+        "improvements",
+        "exampleAnswer",
+        "recommendation",
+        "nextQuestion",
+        "evidenceIds"
+      ]
+    },
+    "Coaching": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "needs_work",
+            "promising",
+            "strong",
+            "uncertain"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 800
+          },
+          "maxItems": 3,
+          "minItems": 0
+        },
+        "improvements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 800
+          },
+          "maxItems": 3,
+          "minItems": 0
+        },
+        "exampleAnswer": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recommendation": {
+          "type": "string",
+          "enum": [
+            "retry",
+            "advance"
+          ]
+        },
+        "nextQuestion": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        },
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "answerId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "questionId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "topicId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "criterionId": {
+          "$ref": "#/$defs/CriterionId"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "guided_sample",
+            "structure_only",
+            "groq",
+            "ollama"
+          ]
+        }
+      },
+      "required": [
+        "verdict",
+        "summary",
+        "strengths",
+        "improvements",
+        "exampleAnswer",
+        "recommendation",
+        "nextQuestion",
+        "evidenceIds",
+        "id",
+        "answerId",
+        "questionId",
+        "topicId",
+        "criterionId",
+        "source"
+      ]
+    },
+    "EvidenceList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 0,
+          "maxItems": 12
+        }
+      },
+      "required": [
+        "evidence"
+      ]
+    },
+    "Capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "groq",
+            "ollama"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "guided",
+            "live"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "consentVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "dataDisclosure": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "uploadLimits": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "fileBytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "totalBytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "totalCharacters": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "requestBytes": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "files",
+            "fileBytes",
+            "totalBytes",
+            "totalCharacters",
+            "requestBytes"
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "mode",
+        "label",
+        "model",
+        "consentVersion",
+        "dataDisclosure",
+        "ready",
+        "uploadLimits"
+      ]
     }
   }
 }

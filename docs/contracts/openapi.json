@@ -1010,6 +1010,84 @@
           }
         }
       }
+    },
+    "/capabilities": {
+      "get": {
+        "operationId": "getCapabilities",
+        "summary": "Read public coach and upload configuration",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Content-free web readiness",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Capabilities"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/sessions/{sessionId}/evidence": {
+      "get": {
+        "operationId": "getSessionEvidence",
+        "summary": "Read owned immutable source excerpts by evidence IDs",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "ids",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 500
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get visible canonical interview state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/EvidenceList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

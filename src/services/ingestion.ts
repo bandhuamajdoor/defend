@@ -1,12 +1,16 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { Upload } from "../domain/types";
 import { requireThat } from "../domain/errors";
+import { uploadLimits, exclusionReason } from "../domain/upload-limits";
 export const sha = (text: string) =>
   createHash("sha256").update(text).digest("hex");
-const allowed = /\.(md|txt|js|jsx|ts|tsx|json|py|sql|css|html|yaml|yml)$/i;
-const blocked =
-  /(^|\/)(\.env[^/]*|\.git|node_modules|vendor|dist|build|coverage|credentials[^/]*|package-lock\.json|pnpm-lock\.yaml|yarn\.lock)(\/|$)/i;
 export function ingest(input: Upload) {
+  requireThat(
+    input.files.length > 0 && input.files.length <= uploadLimits.files,
+    "LIMIT_EXCEEDED",
+    "Choose between 1 and 500 source files.",
+    413,
+  );
   const names = new Set<string>();
   let bytes = 0,
     chars = 0;
@@ -21,7 +25,7 @@ export function ingest(input: Upload) {
       "Use clean relative file paths.",
     );
     requireThat(
-      allowed.test(path) && !blocked.test(path),
+      !exclusionReason(path),
       "UNSUPPORTED_FILE",
       `Excluded file: ${path}. Choose supported source files without secrets.`,
     );
@@ -41,9 +45,9 @@ export function ingest(input: Upload) {
     bytes += byteSize;
     chars += text.length;
     requireThat(
-      byteSize <= 65536,
+      byteSize <= uploadLimits.fileBytes,
       "LIMIT_EXCEEDED",
-      `${path} exceeds 64 KiB.`,
+      `${path} exceeds 256 KiB.`,
       413,
     );
     const lines = text.split("\n");
@@ -66,9 +70,9 @@ export function ingest(input: Upload) {
     };
   });
   requireThat(
-    bytes <= 524288 && chars <= 120000,
+    bytes <= uploadLimits.totalBytes && chars <= uploadLimits.totalCharacters,
     "LIMIT_EXCEEDED",
-    "Project exceeds 512 KiB or 120,000 characters.",
+    "Project exceeds 8 MiB or 2,000,000 characters. Choose the feature you want to practise.",
     413,
   );
   return {
@@ -79,16 +83,27 @@ export function ingest(input: Upload) {
 export function evidenceWindows(file: { id: string; text: string }) {
   const lines = file.text.split("\n");
   const windows = [];
-  for (let i = 0; i < lines.length; i += 60) {
-    const excerpt = lines.slice(i, i + 60).join("\n");
+  for (let i = 0; i < lines.length; ) {
+    let end = i + 1,
+      size = lines[i].length;
+    while (
+      end < lines.length &&
+      end - i < 60 &&
+      size + lines[end].length + 1 <= 10000
+    ) {
+      size += lines[end].length + 1;
+      end++;
+    }
+    const excerpt = lines.slice(i, end).join("\n");
     windows.push({
       id: randomUUID(),
       fileId: file.id,
       startLine: i + 1,
-      endLine: Math.min(i + 60, lines.length),
+      endLine: end,
       excerpt,
       sha256: sha(excerpt),
     });
+    i = end;
   }
   return windows;
 }
