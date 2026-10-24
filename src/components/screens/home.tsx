@@ -21,9 +21,11 @@ import { ErrorNotice, Icon } from "@/components/ui";
 import { useMutation } from "@/components/hooks";
 import { Consent } from "@/components/consent";
 import { ProjectList } from "@/components/project-list";
+import { useRuntime } from "@/components/runtime";
 
 export function Home() {
   const router = useRouter();
+  const runtime = useRuntime();
   const [consent, setConsent] = useState(false);
   const mutation = useMutation();
   async function start() {
@@ -31,6 +33,7 @@ export function Home() {
       await ensureGuest();
       const op = await mutation.run<Operation>("/projects/sample", "POST", {
         consent: true,
+        consentVersion: runtime?.consentVersion,
       });
       if (op) router.push(`/projects/${op.resourceId}?job=${op.jobId}`);
     } catch (e) {
@@ -59,6 +62,19 @@ export function Home() {
           YOUR CODE. YOUR VOICE.
         </span>
       </div>
+      {runtime?.provider === "mock" && (
+        <div className="coach-setup-banner">
+          <AudioLines size={22} />
+          <p>
+            <strong>Practise with the sample.</strong> The sample has a guided
+            checklist now. Connect a free or local model for adaptive technical
+            coaching on your own code.
+          </p>
+          <Link className="btn secondary" href="/settings">
+            Connect free AI <ArrowUpRight size={15} />
+          </Link>
+        </div>
+      )}
       <section className="hero-panel" aria-labelledby="hero-title">
         <div className="hero-content">
           <span className="pill">
@@ -70,9 +86,9 @@ export function Home() {
             <span>“here’s why.”</span>
           </h2>
           <p>
-            A thoughtful project interview, grounded in your code.
+            A project conversation with feedback after every answer.
             <br />
-            One question at a time. At your own pace.
+            Find the gap. Try again. Walk in with a clearer explanation.
           </p>
           <div className="hero-actions">
             <Link className="btn primary" href="/projects/new">

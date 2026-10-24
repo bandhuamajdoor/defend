@@ -13,12 +13,15 @@ import {
   Menu,
   MessageSquare,
   ShieldCheck,
+  Settings2,
 } from "lucide-react";
 import { Badge, Icon } from "@/components/ui";
 import { ThemeSwitch } from "./theme";
+import { useRuntime } from "./runtime";
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const runtime = useRuntime();
   const [menu, setMenu] = useState(false),
     [current, setCurrent] = useState<string | null>(null),
     [ready, setReady] = useState(false);
@@ -42,17 +45,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
     },
   ];
   const title =
-    pathname === "/privacy"
-      ? "Privacy & data"
-      : pathname.includes("/report")
-        ? "Your debrief"
-        : pathname.startsWith("/sessions")
-          ? "Practice room"
-          : pathname === "/projects/new"
-            ? "New project"
-            : pathname.startsWith("/projects")
-              ? "My projects"
-              : "Overview";
+    pathname === "/settings"
+      ? "Coach setup"
+      : pathname === "/privacy"
+        ? "Privacy & data"
+        : pathname.includes("/report")
+          ? "Your debrief"
+          : pathname.startsWith("/sessions")
+            ? "Practice room"
+            : pathname === "/projects/new"
+              ? "New project"
+              : pathname.startsWith("/projects")
+                ? "My projects"
+                : "Overview";
   return (
     <div className="app">
       <a className="skip-link" href="#main">
@@ -91,6 +96,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         <div className="sidebar-bottom">
+          <Link
+            className={`nav-item ${pathname === "/settings" ? "active" : ""}`}
+            href="/settings"
+          >
+            <Settings2 size={18} />
+            Coach setup
+          </Link>
           <Link
             className={`nav-item ${pathname === "/privacy" ? "active" : ""}`}
             href="/privacy"
@@ -132,7 +144,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </div>
           <div className="topbar-right">
             <ThemeSwitch />
-            <Badge tone="green">Development preview</Badge>
+            <Badge tone="green">{runtime?.label ?? "Connecting coach"}</Badge>
             <span className="topbar-divider" />
             <span className="tiny-avatar">Y</span>
           </div>
@@ -149,7 +161,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <span>Made for the work you put in.</span>
           <span>
             <LockKeyhole size={12} /> Private to this browser{" "}
-            <span className="footer-dot">·</span> Mock AI mode
+            <span className="footer-dot">·</span>{" "}
+            {runtime?.label ?? "Coach setup"}
           </span>
         </footer>
       </div>

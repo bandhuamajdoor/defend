@@ -31,6 +31,18 @@ textarea {
   position: relative;
   z-index: 40;
 }
+.theme-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface);
+  opacity: 1 !important;
+}
 .theme-menu summary {
   list-style: none;
   display: flex;
@@ -291,6 +303,9 @@ textarea {
   }
 }
 @media (max-width: 700px) {
+  .setup-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .theme-menu summary {
     padding: 6px 8px;
   }
@@ -309,6 +324,31 @@ textarea {
   .page-transition {
     animation-duration: 0.3s;
   }
+}
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 24px;
+  margin: 24px 0;
+}
+.setup-card {
+  min-width: 0;
+  padding: 28px;
+}
+.setup-card h2 {
+  margin: 18px 0 12px;
+}
+.setup-card p,
+.setup-card li {
+  line-height: 1.7;
+}
+.setup-card ol {
+  padding-left: 20px;
+  margin: 24px 0;
+}
+.file-list {
+  max-height: 360px;
+  overflow-y: auto;
 }
 @media (prefers-reduced-motion: reduce) {
   *,

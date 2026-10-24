@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { headers, cookies } from "next/headers";
 import { ThemeProvider, type Theme } from "@/components/theme";
+import { RuntimeProvider } from "@/components/runtime";
 import "./globals.css";
 import "./experience.css";
+import "./conversation.css";
 export const metadata: Metadata = {
   title: "Defend — Know your work. Own your story.",
   description:
@@ -19,7 +21,9 @@ export default async function RootLayout({
   return (
     <html lang="en" data-theme={theme}>
       <body>
-        <ThemeProvider initial={theme}>{children}</ThemeProvider>
+        <ThemeProvider initial={theme}>
+          <RuntimeProvider>{children}</RuntimeProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

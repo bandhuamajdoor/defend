@@ -5,9 +5,11 @@ import { useState } from "react";
 import { ArrowUpRight, Download, ShieldCheck, Trash2 } from "lucide-react";
 import { ErrorNotice, Modal } from "@/components/ui";
 import { useMutation } from "@/components/hooks";
+import { useRuntime } from "@/components/runtime";
 
 export function Privacy() {
   const router = useRouter();
+  const runtime = useRuntime();
   const mutation = useMutation();
   const [open, setOpen] = useState(false);
   async function remove() {
@@ -42,17 +44,24 @@ export function Privacy() {
             Clearing cookies loses access; there is no cross-device recovery.
             Export reports you want to keep.
           </p>
-          <h3>No live AI provider is enabled.</h3>
+          <h3>
+            Your coaching backend: {runtime?.label ?? "loading configuration"}
+          </h3>
           <p>
-            This build runs a deterministic mock adapter. Project text and
-            answers are not sent to an AI provider. The mock does not assess
-            correctness or competency.
+            {runtime?.dataDisclosure ?? "Coach configuration is loading."}{" "}
+            Guided sample feedback uses a checklist for the exact supplied
+            sample. Own-project technical assessment requires a connected model.
+            Model output can be wrong and should be checked against the cited
+            source.
           </p>
           <h3>Typing and dictation share one input.</h3>
           <p>
-            Defend does not collect microphone audio. External dictation tools
-            process audio under their own policies. Optional spoken questions
-            use your browser’s speech service, which may use online processing.
+            Defend stores answer text, not audio recordings. Optional browser
+            dictation starts only when you press Dictate and may process audio
+            through the browser’s speech service. You review and send the
+            transcript yourself. External dictation tools have their own
+            policies. Spoken coaching also uses browser-provided speech
+            services.
           </p>
           <h3>Retention and deletion</h3>
           <p>

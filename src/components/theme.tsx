@@ -30,7 +30,22 @@ export function ThemeProvider({
 }
 export function ThemeSwitch() {
   const { theme, setTheme } = useContext(ThemeContext);
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
   const Current = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
+  if (!ready)
+    return (
+      <button
+        className="theme-loading"
+        disabled
+        aria-label={`Appearance: ${theme}`}
+      >
+        <Current size={16} />
+        <span>
+          {theme === "system" ? "System" : theme === "dark" ? "Dark" : "Light"}
+        </span>
+      </button>
+    );
   return (
     <details className="theme-menu">
       <summary aria-label={`Appearance: ${theme}`} title="Change appearance">
@@ -53,7 +68,9 @@ export function ThemeSwitch() {
             aria-pressed={theme === t.id}
             onClick={(e) => {
               setTheme(t.id);
-              e.currentTarget.closest("details")?.removeAttribute("open");
+              const menu = e.currentTarget.closest("details");
+              menu?.removeAttribute("open");
+              menu?.querySelector("summary")?.focus();
             }}
           >
             <t.icon size={16} />
