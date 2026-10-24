@@ -6,9 +6,10 @@ import { Home } from "@/components/screens/home";
 import { Projects } from "@/components/screens/projects";
 import { NewProject } from "@/components/screens/new-project";
 import { Project } from "@/components/screens/project";
-import { Interview } from "@/components/screens/interview";
+import { Interview } from "@/components/screens/practice-room";
 import { Report } from "@/components/screens/report";
 import { Privacy } from "@/components/screens/privacy";
+import { Settings } from "@/components/screens/settings";
 
 export function Product() {
   const path = usePathname();
@@ -23,6 +24,7 @@ export function Product() {
   else if (/^\/sessions\/[^/]+$/.test(path))
     content = <Interview key={path} id={path.split("/")[2]} />;
   else if (path === "/privacy") content = <Privacy />;
+  else if (path === "/settings") content = <Settings />;
   else
     content = (
       <div className="empty-state">

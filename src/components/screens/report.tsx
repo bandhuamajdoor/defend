@@ -126,7 +126,15 @@ export function Report({ id }: { id: string }) {
           <BookOpen size={24} />
         </span>
         <div>
-          <Badge tone="green">Development report preview</Badge>
+          <Badge tone="green">
+            {r.rubricVersion.includes("guided_sample")
+              ? "Guided sample debrief"
+              : r.rubricVersion.includes("structure_only")
+                ? "Explanation practice"
+                : r.rubricVersion.includes("mock")
+                  ? "Saved mock preview"
+                  : "AI coaching debrief"}
+          </Badge>
           <h2>Keep the reasoning. Find your next question.</h2>
           <p>{r.content.summary}</p>
         </div>
@@ -177,7 +185,13 @@ export function Report({ id }: { id: string }) {
                 <span className="eyebrow">
                   REFLECTION {String(i + 1).padStart(2, "0")}
                 </span>
-                <Badge>Unresolved · mock preview</Badge>
+                <Badge>
+                  {f.outcome === "supported"
+                    ? "Supported observation"
+                    : f.outcome === "contradicted"
+                      ? "Needs correction"
+                      : "Needs verification"}
+                </Badge>
               </div>
               <h3>{f.title}</h3>
               {f.answerQuotes.map((q) => (
