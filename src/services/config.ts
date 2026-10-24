@@ -1,11 +1,5 @@
 import { AppError } from "../domain/errors";
 export function checkConfig() {
-  if (process.env.MODEL_PROVIDER !== "mock")
-    throw new AppError(
-      "DEPENDENCY_UNAVAILABLE",
-      "Only the explicitly labelled mock adapter is implemented. Live AI is not enabled.",
-      503,
-    );
   if (
     !process.env.APP_SECRET ||
     process.env.APP_SECRET.length < 32 ||
