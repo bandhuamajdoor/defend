@@ -2,7 +2,7 @@
 
 A private project interview workspace for students: bring your source, confirm the context, practise explaining your decisions, and reflect with source-linked notes.
 
-**Status: conversational V1 preview.** Sample/upload → brief → conversation with feedback after each answer → report → retest → export/delete is implemented, with light/dark/system themes, animations and optional browser dictation/speech. The included sample has a deterministic, source-linked coaching checklist. Your own project receives explanation-structure coaching until you configure **Groq Free or local Ollama**. Both adapters are implemented; external model quality has not been tested with credentials or a local model here. Public deployment and human trials remain open.
+**Status: conversational V1 preview.** Sample/upload → brief → conversation with feedback after each answer → report → retest → export/delete is implemented, with light/dark/system themes, animations and optional browser dictation/speech. The included sample has a deterministic, source-linked coaching checklist. Your own project receives explanation-structure coaching until you configure **Groq Free or local Ollama**. Both adapters are implemented. Live Groq preparation has been verified on one real C++ folder; conversation quality still needs human review. Public deployment and human trials remain open.
 
 ## Run locally
 
@@ -32,6 +32,8 @@ npm run dev
 Open [the local workspace](http://localhost:3000). Use localhost, matching APP_ORIGIN, for cookie and Origin validation. Accept the visible storage consent and try the sample, or add your own UTF-8 files. No provider credentials are needed for guided practice.
 
 Setup creates a gitignored .env.local with a random app secret. The local PostgreSQL launcher stores development data under gitignored .data/. For an existing PostgreSQL server, set DATABASE_URL and skip db:local.
+
+The database must use **UTF-8**. New local clusters/databases explicitly select it. For a legacy Windows database using WIN1252, stop web/worker and other app database connections, keep PostgreSQL running, then run `npm run db:utf8`. The repair snapshots and verifies every application table, switches to UTF-8 under the same database name and keeps the original as a disabled rollback database. It does not reset data or change credentials. Restart web/worker afterward. Manual snapshots under .data/backups/ and the legacy database are separate from active workspace deletion and are not automatically purged; remove them through local administration when no longer needed. See [the developer guide](docs/11-developer-guide.md).
 
 ## Free AI coaching and larger projects
 

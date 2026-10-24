@@ -8,6 +8,8 @@ Coaching tests cover intentionally bad, confidently wrong and concise correct sa
 
 Upload regression tests include C/C++ sources/headers/templates/Makefiles/configuration, 622 bundled headers, root/nested ignore precedence, anchoring, escaped patterns, negation, ignored parents, unreadable rules and safeguards that Git negation cannot bypass. Browser checks cover ignore exceptions, C++ preparation, re-selection after changing .gitignore and explicit acknowledgement of documentation-only context.
 
+Unicode regression tests prepare README tree glyphs, Hindi, Chinese and emoji without changing the source. A real WIN1252 database fixture verifies the local repair preserves existing IDs/rows and Latin text, changes the active database to UTF8 and leaves the original disabled as a rollback copy. Unexpected upload-error tests check useful upload-specific copy and correlation logs without raw source/database errors. An exact local 14-file C++ folder also completed live Groq preparation after the database repair; this establishes preparation plumbing for that input, not general coaching quality.
+
 ## Requirement traceability
 | Test ID | Requirements | Scenario and pass condition |
 | --- | --- | --- |

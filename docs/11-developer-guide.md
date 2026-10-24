@@ -12,6 +12,7 @@ Use npm run db:local for a persistent local PostgreSQL cluster under .data/postg
 | --- | --- |
 | npm run setup | Create local env and random secret if missing |
 | npm run db:local | Persistent native development PostgreSQL |
+| npm run db:utf8 | Preserve a legacy local database while converting its application data to UTF-8; stop web/worker first |
 | npm run db:migrate / db:deploy | Development migrations / apply checked-in migrations |
 | npm run db:seed | Validate original sample fixture |
 | npm run dev / worker:dev | Web and separate development worker |
@@ -24,6 +25,14 @@ Use npm run db:local for a persistent local PostgreSQL cluster under .data/postg
 | npm run docs:check | Local links, examples, contract structure and references |
 
 Open http://localhost:3000 to match APP_ORIGIN. Health checks DB access and a worker heartbeat newer than 60 seconds. Browser checks require npx playwright install chromium and running web + worker. Generated artifacts are under output/. Successful smoke runs delete their workspace; failed runs may leave test guests until expiry. Never run tests against production.
+
+## Windows Unicode repair
+
+Database encoding must be UTF8. Without explicit encoding, a Windows locale can create WIN1252; uploads containing README tree characters, non-Latin text or emoji then fail before preparation. The local launcher now supplies UTF8/C for initdb and creates databases from template0 with UTF8/C. Readiness and project ingestion reject a non-UTF8 database with repair guidance.
+
+For a database created by the old launcher, keep PostgreSQL running but stop web/worker and all other app DB connections. Run `npm run db:utf8`, then restart web/worker. The local-only helper refuses unknown schemas or active connections, blocks new source connections, snapshots all application rows and migration history under .data/backups/, deploys the target schema, imports typed rows in dependency order, and verifies row-content fingerprints before cutover. UUIDs, timestamps, JSON, arrays, owner credentials and saved answers are preserved. It keeps the configured database name and never rewrites .env.local.
+
+The original database is retained under a generated _legacy_ name with connections disabled. The snapshot receipt records that name and verified row counts. Failures before cutover restore access to the original database. Staging/legacy databases and manual snapshots are not automatically deleted; active workspace deletion does not remove these rollback copies. Keep them private and remove them through local administration after verification when no longer needed. This is an application-specific local repair, not the hosted backup/restore release gate or a general PostgreSQL migration tool. See the [PostgreSQL database-creation documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html) for encoding/template constraints.
 
 ## Layout and rules
 - src/app: entry points, HTTP transport and styles.

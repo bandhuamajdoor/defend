@@ -18,6 +18,8 @@ Browser speech works without server TTS credentials; validate actual availabilit
 8. Record commit/image, migration version, model/prompt/rubric versions, provider prices and actual infrastructure cost.
 
 ## Readiness and metrics
+PostgreSQL server_encoding must be UTF8. Health reports unavailable for a legacy encoding even if a simple query works; project uploads return explicit repair guidance before inserting files. The native local launcher sets encoding explicitly rather than inheriting the Windows locale. `npm run db:utf8` repairs an existing local application database with row verification and retained rollback copies; it does not replace the hosted backup/restore policy below.
+
 Web health checks DB connectivity and worker heartbeat freshness (<60 seconds); return 503 when sessions cannot progress. A lightweight process liveness probe remains separate inside hosting configuration to avoid restart loops during transient DB failure.
 Worker writes heartbeat every 15 seconds; alert on stale heartbeat >60s, oldest queued job >120s, failures >10% over 20 jobs, repeated invalid evidence, or 80% daily spend.
 Log request/job/session IDs, states, timings, token counts and error codes. Exclude source, answers, prompts, cookies and keys.

@@ -12,21 +12,23 @@
 - C/C++ source, headers, templates, build/config text and scoped root/nested .gitignore folder filtering. Bundled-library defaults preserve original include/ headers; re-selection refreshes ignored files, and documentation-only context requires acknowledgement.
 - Immutable source and answer history, persisted coaching, assisted revisions, reports with exact quotations, practice tasks, export/dispute and focused retest.
 - Guest ownership, Origin validation, idempotency, durable PostgreSQL jobs, lease/revision fences, bounded retries, deletion/expiry and purge. Explicit End can summarize saved coaching even during a provider outage.
+- UTF-8 native database initialization/readiness and verified repair of legacy Windows encodings, preserving existing rows/IDs with a retained rollback database. Upload errors no longer claim nonexistent interview answers were saved; unexpected failures log only correlation metadata.
 
 ## Verification
 | Check | Actual local result |
 | --- | --- |
 | Domain/coaching/upload tests | 66 passing: boundaries, controller, sample feedback, assisted revisions, retrieval, Unicode/model contracts, C++ and scoped ignore-rule regressions |
-| PostgreSQL integration | 16 passing: API contracts/isolation, races/recovery, saved coaching/report/export/retest/deletion, synthetic model transports/quotas, 500-file scope, End without another model call |
+| PostgreSQL integration | 19 passing: contracts/isolation/recovery, coaching/report lifecycle, synthetic transports/quotas, 500-file scope, Unicode preservation, legacy Windows data repair and redacted failure diagnostics |
 | Chromium browser | Eleven scenarios passed: theme/accessibility, conversation/recovery, debrief/retest, nested ignore exceptions, C++ preparation with 622 bundled headers, re-selection after changed rules, documentation-only acknowledgement and mobile/setup/delete-all |
 | Accessibility | Automated WCAG A/AA light, dark and conversation scans passed; full manual audit remains open |
 | Build | Optimized Next.js web and independent worker compiled locally |
 | Evaluation | Twelve legacy mechanical schema/quotation checks; no external semantic model evaluation |
+| Live Groq preparation | One exact 14-file C++ folder (~30 KiB) prepared successfully after the Windows encoding repair; this does not establish conversation quality or large-project completeness |
 
 Generated screenshots, scans and results live under gitignored output/playwright/ and output/evals/. Reproduce with the developer guide. Browser recognition uses a test double; no actual microphone was tested. Transport stubs do not establish Groq/Ollama coaching quality.
 
 ## Remaining release work
-- A free Groq key or installed local Ollama model is still needed for real own-project AI coaching. No external inference or model download was performed here.
+- Groq is configured locally and actual project preparation has been verified. Live coaching quality still needs human review; local Ollama has not been installed or externally evaluated. No model download was performed here.
 - Human-reviewed relevance, factual grounding, quality, latency and hardware measurements on actual large projects. A synthetic 500-file test proves bounded indexing/retrieval plumbing only.
 - Full keyboard/screen-reader/200% zoom, cross-browser and real speech/Wispr trials.
 - Hosted staging/container verification, actual process-kill/restart rehearsal, encrypted backups/restore and provider-retention configuration. Docker is unavailable locally; public hosting is not configured.

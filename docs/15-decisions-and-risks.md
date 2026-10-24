@@ -23,6 +23,7 @@ Decisions below are implementation defaults chosen to make development executabl
 | D17 | Up to 500 files, cached JS/TS symbol/import map, bounded lexical retrieval with disclosed scope | Larger student projects require navigation beyond a first-files sample | Retrieval misses, context limits or measured latency justify deeper analysis |
 | D18 | Light/dark/system theme, accessible motion and optional browser dictation | User wants an interactive conversation with the computer | Manual accessibility and actual microphone trials |
 | D19 | C/C++ text source/build/config support, scoped .gitignore filtering and visible documentation-only acknowledgement | User's storage-engine folder was reduced to a README by a narrow extension filter; Git ignore rules must govern folder selection | Additional language parsers or Git-aware repository ingestion |
+| D20 | Explicit UTF-8 local database creation, encoding readiness guard and verified local data repair | Windows' inherited WIN1252 rejected Unicode README trees before project preparation; prior ASCII fixtures missed it | Other deployment/database tooling changes |
 
 D15–D18 supersede the earlier mock-only, small-input and post-session-only feedback defaults in D01/D07/D12/D14. The paid-billing architecture remains a future target; no purchase is authorized. Browser speech recognition can use a vendor service, and the app discloses this before optional use.
 
