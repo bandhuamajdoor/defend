@@ -103,7 +103,37 @@ export function accept(
     text: answer.text,
     createdAt: new Date(now).toISOString(),
   });
+  if (s.coachMode) {
+    freeze(s, now);
+    s.count++;
+    s.currentQuestion = null;
+    s.pendingAnswerId = answer.id;
+    return budgetReached(s, mode, now) ? "evaluating" : "generating";
+  }
   return afterEvent(s, plan, mode, now);
+}
+export function applyCoaching(
+  s: State,
+  plan: PlanContent,
+  feedback: import("./types").Coaching,
+): boolean {
+  s.coaching ??= [];
+  if (!s.coaching.some((c) => c.answerId === feedback.answerId))
+    s.coaching.push(feedback);
+  s.pendingAnswerId = null;
+  const attempts = s.answers.filter(
+    (a) => a.topicId === feedback.topicId,
+  ).length;
+  if (feedback.recommendation === "retry" && attempts < 3 && s.followups < 2) {
+    s.followups++;
+    s.next = "follow_up";
+    return true;
+  }
+  s.topicIndex++;
+  s.followups = 0;
+  s.clarifications = 0;
+  s.next = "opening";
+  return s.topicIndex < plan.topics.length;
 }
 export function control(
   s: State,

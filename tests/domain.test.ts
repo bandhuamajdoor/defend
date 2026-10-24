@@ -64,14 +64,14 @@ describe("upload boundaries", () => {
     expect(() =>
       ingest({
         ...sample,
-        files: [{ path: "large.ts", text: "€".repeat(22000) }],
+        files: [{ path: "large.ts", text: "€".repeat(88000) }],
       }),
-    ).toThrow(/64 KiB/));
+    ).toThrow(/256 KiB/));
   it("accepts the exact per-file byte boundary", () =>
     expect(
-      ingest({ ...sample, files: [{ path: "ok.ts", text: "a".repeat(65536) }] })
+      ingest({ ...sample, files: [{ path: "ok.ts", text: "a".repeat(262144) }] })
         .files[0].byteSize,
-    ).toBe(65536));
+    ).toBe(262144));
   it("rejects secrets without echoing their values", () => {
     const value = "ghp_" + "a".repeat(30);
     try {

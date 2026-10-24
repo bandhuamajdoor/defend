@@ -25,6 +25,7 @@ export interface Upload {
   contribution: string;
   consent: true;
   files: SourceInput[];
+  consentVersion?:string;
 }
 export interface Evidence {
   id: string;
@@ -49,6 +50,7 @@ export interface PlanContent {
   contribution: string;
   uncertainties: string[];
   topics: Topic[];
+  coverage?:{indexedFiles:number;indexedExcerpts:number;reviewedExcerpts:number;strategy:string;notes:string[]};
 }
 export interface Question {
   id: string;
@@ -88,6 +90,9 @@ export interface State {
   pausedFrom: Status | null;
   next: "opening" | "follow_up" | "clarification";
   reportId: string | null;
+  coachMode?: boolean;
+  pendingAnswerId?: string | null;
+  coaching?: Coaching[];
 }
 export interface PublicSession {
   id: string;
@@ -103,6 +108,32 @@ export interface PublicSession {
   budgetReached: boolean;
   reportId: string | null;
   jobId?: string | null;
+  coaching?: Coaching[];
+  engine?:
+    | "guided_sample"
+    | "structure_only"
+    | "groq"
+    | "ollama"
+    | "legacy_mock";
+  topicProgress?: { current: number; total: number };
+}
+export interface CoachResponse {
+  verdict: "needs_work" | "promising" | "strong" | "uncertain";
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+  exampleAnswer: string | null;
+  recommendation: "retry" | "advance";
+  nextQuestion: string;
+  evidenceIds: string[];
+}
+export interface Coaching extends CoachResponse {
+  id: string;
+  answerId: string;
+  questionId: string;
+  topicId: string;
+  criterionId: Criterion;
+  source: "guided_sample" | "structure_only" | "groq" | "ollama";
 }
 export interface Quote {
   answerId: string;
