@@ -26,5 +26,5 @@ An uploaded correction creates a new immutable version. Existing sessions/report
 
 ## Sample fixture
 Create a small original TypeScript “Campus Tickets” project with README, route handler, price calculation, ownership middleware and tests. Include one demonstrable stale-price bug, one correctly handled edge case, and one missing-context scenario. Provide a separate ground-truth manifest for evaluation, never visible to the interview model as a student's answer.
-Fixture is planned, not present yet; ticket B02 owns implementation. Each guest receives an isolated copy; seed data never substitutes for failed real-model output.
+The fixture is implemented in [sample source](../src/fixtures/sample.ts), with a separate [ground-truth manifest](../evals/ground-truth.json). Each guest receives an isolated copy. No live model output is substituted by this mock fixture.
 

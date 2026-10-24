@@ -16,6 +16,10 @@ Decisions below are implementation defaults chosen to make development executabl
 | D10 | File/symbol retrieval first | Small inputs do not justify graph/vector infrastructure | Measured retrieval misses require it |
 | D11 | Immutable versions and reports | Stable evidence and reproducibility | Never relax this invariant |
 | D12 | Deterministic mock only in dev | Reliable tests without misleading live output | Never relabel mock as real |
+| D13 | One hashed credential on Owner, JSON controller snapshot plus normalized transcript | Small guest-only preview; advisory locks and lease/revision fencing preserve writes | Rotation or multiple credentials |
+| D14 | Full line-window indexing, fixed initial expiry, mock-only provider gate | Runnable first vertical slice with honest coverage and no paid calls | AST indexing, sliding retention and live adapter validation |
+
+Current implementation refinements and actual verification are recorded in [implementation status](16-implementation-status.md). These do not remove original release gates.
 
 ## Open choices and deadlines
 | Choice | Working default | Needed by | Blocking? |

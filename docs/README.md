@@ -1,5 +1,5 @@
 # Development documentation
-Version 0.1 — 24 October 2026. All product behaviour below is a specification until demonstrated by implementation and release evidence.
+Version 0.1 — 24 October 2026. These documents define the release target. A local mock preview is now implemented; see [implementation status and evidence](16-implementation-status.md) for what works and what remains unverified.
 
 ## Read in this order
 1. [Product requirements](01-product-requirements.md): users, scope, requirement IDs and acceptance.

@@ -1,5 +1,5 @@
 # API contract
-Base path /api/v1. JSON over HTTPS. [OpenAPI](contracts/openapi.json) defines all planned routes; [domain schema](contracts/domain.schema.json) is the field/enum source. IDs are UUIDs, times ISO-8601 UTC. No API has been implemented yet.
+Base path /api/v1. JSON over HTTPS (localhost HTTP in development). [OpenAPI](contracts/openapi.json) defines routes; [domain schema](contracts/domain.schema.json) is the field/enum source. IDs are UUIDs, times ISO-8601 UTC. The local mock API is implemented; see [status](16-implementation-status.md) for release limits.
 
 ## Authentication
 POST /guest creates an opaque 256-bit random credential in HttpOnly, Secure, SameSite=Lax cookie defend_guest, Path=/, max-age 30 days. Local HTTP development may omit Secure only on localhost. Store token hash in credentials. No credential in URL, logs or localStorage. Existing valid guest may reuse its identity.
@@ -18,6 +18,7 @@ Stateful mutations also require expectedRevision in body; deletes operate on ful
 | POST /projects | Upload project and queue preparation | 202 Operation |
 | POST /projects/sample | Accept ConsentRequest, copy seeded fixture and queue preparation | 202 Operation |
 | GET /projects/{projectId} | Files metadata, versions, latest plan/status | 200 Project |
+| GET /projects/{projectId}/sessions | Owner-scoped interview history | 200 ProjectSessionList |
 | POST /projects/{projectId}/versions | Upload complete replacement version | 202 Operation |
 | POST /projects/{projectId}/confirm | Confirm or edit latest prepared summary/contribution | 200 Confirmation |
 | DELETE /projects/{projectId} | Tombstone project and schedule purge | 202 Deletion |

@@ -1,6 +1,6 @@
 # Deployment and operations
 ## Hosting contract
-Container-friendly HTTPS web process + private persistent worker + managed PostgreSQL, co-located where possible. Choose the user's existing hosting account before spending. No provider-specific deployment files exist yet.
+Container-friendly HTTPS web process + private persistent worker + managed PostgreSQL, co-located where possible. Choose the user's existing hosting account before spending. Dockerfile, Compose and GitHub Actions configuration are prepared; Docker/hosted deployment is unverified on the current host. See [implementation status](16-implementation-status.md).
 A web-only serverless deployment is insufficient for this queue design unless a supported durable worker service is also configured. Do not launch provider calls in unawaited request callbacks. Host duration/pricing must be checked against current plan documentation when deploying.
 
 ## Configuration gates

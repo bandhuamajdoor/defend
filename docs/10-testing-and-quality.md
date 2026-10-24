@@ -2,7 +2,7 @@
 ## Strategy
 Test meaningful failure boundaries. Pure domain tests cover transitions and invariants; integration tests use real PostgreSQL transactions; browser tests exercise user journeys; AI evaluations check evidence and conversation usefulness. Mock-only success cannot establish product quality.
 
-Planned tools: Vitest for domain/API tests, Playwright for browser tests, a small scripted real-provider evaluation runner. Pin versions during scaffold. Do not treat these commands as available until ticket B01 implements them.
+Implemented tools: pinned Vitest for domain/API tests and Playwright for browser checks. Commands now work as described in the developer guide. The evaluation runner performs mechanical mock checks only; real-provider semantic evaluation remains a release gate. See [actual local evidence](16-implementation-status.md).
 
 ## Requirement traceability
 | Test ID | Requirements | Scenario and pass condition |
