@@ -5,7 +5,7 @@ Students can build a functioning project but struggle to explain its actual impl
 Job: “Help me practise defending this project, reveal gaps fairly, and give me a focused way to improve.”
 
 ## Release scope
-The release is a complete desktop-first English practice product for JavaScript/TypeScript web projects, including focused slices from larger repositories within disclosed upload/retrieval limits. Python/plain-text files may be accepted as context, but specialised analysis is only claimed for the tested JS/TS scope. Student stack remains an assumption to validate in trials. Normal interview: five planned topics, target 5–8 minutes, hard cap 12 submitted answers or 12 active minutes. Time is a product pacing target, never a competency signal. Retest: two topics, six answers or six active minutes. No forced submission of an unfinished answer.
+The release is a complete desktop-first English project interview practice product, including focused slices from larger repositories within disclosed upload/retrieval limits. C/C++ source, headers, build files and configuration are accepted alongside JS/TS/Python; specialised syntax indexing is only claimed for JS/TS. Other source uses text retrieval. Student stack and question quality remain subjects for actual trials. Normal interview: five planned topics, target 5–8 minutes, hard cap 12 submitted answers or 12 active minutes. Time is a product pacing target, never a competency signal. Retest: two topics, six answers or six active minutes. No forced submission of an unfinished answer.
 
 ## Requirements
 | ID | Requirement | Acceptance |

@@ -37,7 +37,7 @@ Setup creates a gitignored .env.local with a random app secret. The local Postgr
 
 Open [Coach setup](http://localhost:3000/settings) or follow the [free AI guide](docs/17-free-ai-setup.md). Groq Free needs a free account key; Ollama needs an installed local model and enough RAM/VRAM. There is no automatic paid fallback. Restart web and worker after changing provider settings, then prepare a fresh project to match the consent and saved plan.
 
-Choose a folder or selected files: up to **500 files, 256 KiB/file, 8 MiB total and 2,000,000 characters**. Folder exclusions are shown before submission. JS/TS symbols and relative imports are indexed without executing code. Bounded source packs are retrieved per topic; coverage distinguishes indexed source from model-reviewed excerpts. This is focused interview preparation, not a claim that every line in an arbitrary large repository has been understood.
+Choose a folder or selected files: up to **500 files, 256 KiB/file, 8 MiB total and 2,000,000 characters**. C/C++ source, headers, templates, Makefiles and configuration text are accepted alongside JS/TS/Python. Folder selection respects root/nested **.gitignore** rules, shows exclusion reasons and skips common bundled libraries. Re-selecting a folder replaces the list; documentation-only context requires acknowledgement. JS/TS symbols and relative imports are indexed without executing code; other languages use text retrieval. Bounded source packs are retrieved per topic; coverage distinguishes indexed source from model-reviewed excerpts. This is focused interview preparation, not a claim that every line in an arbitrary large repository has been understood.
 
 ## Verify
 

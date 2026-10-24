@@ -6,6 +6,8 @@ Implemented tools: pinned Vitest for domain/API tests and Playwright for browser
 
 Coaching tests cover intentionally bad, confidently wrong and concise correct sample answers, assisted revisions, bounded follow-ups, missing context and ending during unavailable coaching. Retrieval tests cover 500 files, relative imports and no code execution. Real PostgreSQL tests stub Groq/Ollama transport to verify schema, quotas and no fallback; they establish adapter mechanics, not external model quality. Browser speech recognition is simulated to check text handoff and review-before-send; actual microphone/audio QA remains manual.
 
+Upload regression tests include C/C++ sources/headers/templates/Makefiles/configuration, 622 bundled headers, root/nested ignore precedence, anchoring, escaped patterns, negation, ignored parents, unreadable rules and safeguards that Git negation cannot bypass. Browser checks cover ignore exceptions, C++ preparation, re-selection after changing .gitignore and explicit acknowledgement of documentation-only context.
+
 ## Requirement traceability
 | Test ID | Requirements | Scenario and pass condition |
 | --- | --- | --- |
