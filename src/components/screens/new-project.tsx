@@ -18,7 +18,11 @@ import { ErrorNotice } from "@/components/ui";
 import { useMutation } from "@/components/hooks";
 import { Consent } from "@/components/consent";
 import { useRuntime } from "@/components/runtime";
-import { uploadLimits, exclusionReason } from "@/domain/upload-limits";
+import { uploadLimits, implementationSource } from "@/domain/upload-limits";
+import {
+  selectUploadCandidates,
+  type ExcludedFile,
+} from "@/domain/folder-selection";
 
 export function NewProject() {
   const router = useRouter();
@@ -29,41 +33,69 @@ export function NewProject() {
     [ready, setReady] = useState(false),
     [reading, setReading] = useState(false),
     [dragging, setDragging] = useState(false),
-    [excluded, setExcluded] = useState<{ path: string; reason: string }[]>([]);
+    [excluded, setExcluded] = useState<ExcludedFile[]>([]),
+    [ignoreInfo, setIgnoreInfo] = useState(""),
+    [documentationAccepted, setDocumentationAccepted] = useState(false);
   useEffect(() => setReady(true), []);
   const mutation = useMutation();
   const input = useRef<HTMLInputElement>(null);
   const folder = useRef<HTMLInputElement>(null);
-  async function select(list: FileList | null) {
+  const documentationOnly =
+    files.length > 0 && !files.some((f) => implementationSource.test(f.path));
+  async function select(list: FileList | null, isFolder = false) {
     if (!list) return;
     setFileError("");
     setReading(true);
+    setDocumentationAccepted(false);
     try {
-      const candidates = Array.from(list).map((file) => ({
-        file,
-        path: file.webkitRelativePath
-          ? file.webkitRelativePath.split("/").slice(1).join("/")
-          : file.name,
-      }));
-      const skipped = candidates
-        .map((c) => ({
-          path: c.path,
-          reason:
-            exclusionReason(c.path) ??
-            (c.file.size > uploadLimits.fileBytes ? "Exceeds 256 KiB" : null),
-        }))
-        .filter((c): c is { path: string; reason: string } => !!c.reason);
+      const existing = isFolder ? [] : files;
+      const candidates = Array.from(list).map((file) => {
+        let content: Promise<string> | undefined;
+        return {
+          path: (file.webkitRelativePath
+            ? file.webkitRelativePath.split("/").slice(1).join("/")
+            : file.name
+          )
+            .replaceAll("\\", "/")
+            .normalize("NFC"),
+          size: file.size,
+          readText: () =>
+            (content ??= file
+              .arrayBuffer()
+              .then((buffer) => {
+                const text = new TextDecoder("utf-8", { fatal: true }).decode(
+                  buffer,
+                );
+                if (text.includes("\0"))
+                  throw new Error(
+                    `${file.name} contains binary data. Choose UTF-8 source text.`,
+                  );
+                return text;
+              })
+              .catch(() => {
+                throw new Error(
+                  `${file.name} is not readable UTF-8 text. Remove it or choose a smaller source folder.`,
+                );
+              })),
+        };
+      });
+      const selection = await selectUploadCandidates(candidates, isFolder);
+      const { excluded: skipped, eligible } = selection;
       setExcluded(skipped);
-      const eligible = candidates.filter(
-        (c) => !skipped.some((s) => s.path === c.path),
+      setIgnoreInfo(
+        isFolder
+          ? selection.gitignoreFiles
+            ? `Applied ${selection.gitignoreFiles} .gitignore file(s), including nested rules and ! exceptions.`
+            : "No .gitignore found in the selected folder. Default exclusions still apply."
+          : "Select a folder to apply its .gitignore rules. Individual file selection cannot discover nearby ignore files.",
       );
-      if (files.length + eligible.length > uploadLimits.files)
+      if (existing.length + eligible.length > uploadLimits.files)
         throw new Error(
           "Choose up to 500 source files. Narrow this folder to the feature you want to practise.",
         );
       if (
-        eligible.reduce((n, c) => n + c.file.size, 0) +
-          files.reduce(
+        eligible.reduce((n, c) => n + c.size, 0) +
+          existing.reduce(
             (n, f) => n + new TextEncoder().encode(f.text).length,
             0,
           ) >
@@ -77,13 +109,12 @@ export function NewProject() {
           "No supported source files were found. Review the exclusions below.",
         );
       const selected = await Promise.all(
-        eligible.map(async ({ file: f, path }) => {
-          const buffer = await f.arrayBuffer();
-          const text = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+        eligible.map(async ({ path, readText }) => {
+          const text = await readText();
           return { path, text };
         }),
       );
-      const combined = [...files, ...selected];
+      const combined = [...existing, ...selected];
       if (
         new Set(combined.map((f) => f.path.toLowerCase())).size !==
         combined.length
@@ -111,6 +142,7 @@ export function NewProject() {
   }
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (documentationOnly && !documentationAccepted) return;
     const data = new FormData(e.currentTarget);
     try {
       await ensureGuest();
@@ -184,7 +216,6 @@ export function NewProject() {
             type="file"
             disabled={!ready || reading}
             multiple
-            accept=".md,.txt,.js,.jsx,.mjs,.cjs,.ts,.tsx,.json,.py,.sql,.css,.html,.yaml,.yml"
             onChange={(e) => void select(e.target.files)}
             aria-label="Select project files"
           />
@@ -226,7 +257,7 @@ export function NewProject() {
             className="sr-only"
             type="file"
             multiple
-            onChange={(e) => void select(e.target.files)}
+            onChange={(e) => void select(e.target.files, true)}
             aria-label="Select project folder"
           />
           <div className="upload-actions">
@@ -244,14 +275,28 @@ export function NewProject() {
             {files.length
               ? `${files.length} source files selected · ${(files.reduce((n, f) => n + new TextEncoder().encode(f.text).length, 0) / 1024).toFixed(1)} KiB. `
               : ""}
-            A folder keeps relative paths. Dependencies, generated output and
-            secret files are excluded before upload.
+            A folder keeps relative paths and respects its .gitignore.
+            Dependencies, generated output and secret files are excluded before
+            upload. Selecting a folder replaces the current selection.
           </p>
+          {ignoreInfo && (
+            <p className="upload-status" role="status">
+              {ignoreInfo}
+            </p>
+          )}
           {excluded.length > 0 && (
             <details className="upload-exclusions">
               <summary>
                 {excluded.length} files excluded — review before continuing
               </summary>
+              <p className="small-copy">
+                {Array.from(new Set(excluded.map((f) => f.reason)))
+                  .map(
+                    (reason) =>
+                      `${excluded.filter((f) => f.reason === reason).length} · ${reason}`,
+                  )
+                  .join("; ")}
+              </p>
               <ul>
                 {excluded.map((f, i) => (
                   <li key={`${f.path}-${i}`}>
@@ -273,7 +318,10 @@ export function NewProject() {
                   <button
                     type="button"
                     className="icon-button"
-                    onClick={() => setFiles(files.filter((_, j) => i !== j))}
+                    onClick={() => {
+                      setFiles(files.filter((_, j) => i !== j));
+                      setDocumentationAccepted(false);
+                    }}
                     aria-label={`Remove ${f.path}`}
                   >
                     <X size={15} />
@@ -283,6 +331,24 @@ export function NewProject() {
             </ul>
           )}
           {fileError && <ErrorNotice message={fileError} />}
+          {documentationOnly && (
+            <div className="notice" role="status">
+              <strong>No implementation source is selected.</strong>
+              <p>
+                Only documentation or configuration is ready. Add your source
+                files for code-specific interview questions, or explicitly
+                continue with this limited context.
+              </p>
+              <label className="consent">
+                <input
+                  type="checkbox"
+                  checked={documentationAccepted}
+                  onChange={(e) => setDocumentationAccepted(e.target.checked)}
+                />
+                Continue with documentation and configuration only
+              </label>
+            </div>
+          )}
           <Consent checked={consent} onChange={setConsent} />
           {mutation.error && <ErrorNotice message={mutation.error} />}
           <div className="form-footer">
@@ -292,7 +358,13 @@ export function NewProject() {
             <button
               className="btn primary"
               type="submit"
-              disabled={!consent || !files.length || mutation.busy || reading}
+              disabled={
+                !consent ||
+                !files.length ||
+                mutation.busy ||
+                reading ||
+                (documentationOnly && !documentationAccepted)
+              }
             >
               {mutation.busy ? "Saving project…" : "Prepare my project"}
               <ArrowRight size={16} />
@@ -317,7 +389,7 @@ export function NewProject() {
           <ul className="check-list">
             <li>
               <Check size={15} />
-              JavaScript & TypeScript focus
+              C/C++, JavaScript, TypeScript & Python source
             </li>
             <li>
               <Check size={15} />
@@ -332,6 +404,13 @@ export function NewProject() {
               No archives, PDFs or binaries
             </li>
           </ul>
+          <p className="small-copy">
+            C/C++ headers, templates, Makefiles and configuration text are
+            supported. Only JS/TS has syntax indexing; other source uses text
+            retrieval. Bundled Asio/Crow and third_party libraries are skipped
+            in folders; choose individual files if you want to discuss a
+            dependency.
+          </p>
           <p className="small-copy">
             Only upload files you’re allowed to share. Secret detection is
             best-effort; review your files first.
