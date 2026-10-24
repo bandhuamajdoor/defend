@@ -64,14 +64,14 @@ try {
       await expect(
         page.getByRole("heading", { name: /Good work deserves/ }),
       ).toBeVisible();
-      await page.getByLabel(/Appearance:/).click();
+      await page.getByTitle("Change appearance").click();
       await page.getByRole("button", { name: "Light", exact: true }).click();
       await audit("light");
       await page.screenshot({
         path: "output/playwright/overview.png",
         fullPage: true,
       });
-      await page.getByLabel(/Appearance:/).click();
+      await page.getByTitle("Change appearance").click();
       await page.getByRole("button", { name: "Dark", exact: true }).click();
       await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
       await page.reload();
