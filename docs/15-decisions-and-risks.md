@@ -18,6 +18,12 @@ Decisions below are implementation defaults chosen to make development executabl
 | D12 | Deterministic mock only in dev | Reliable tests without misleading live output | Never relabel mock as real |
 | D13 | One hashed credential on Owner, JSON controller snapshot plus normalized transcript | Small guest-only preview; advisory locks and lease/revision fencing preserve writes | Rotation or multiple credentials |
 | D14 | Full line-window indexing, fixed initial expiry, mock-only provider gate | Runnable first vertical slice with honest coverage and no paid calls | AST indexing, sliding retention and live adapter validation |
+| D15 | Immediate coaching after each answer, bounded retries and report from saved coaching | User's V1 critique prioritizes conversational preparation, explanations and refinements | Human trials and calibrated model evaluations |
+| D16 | Groq Free and loopback Ollama; no paid fallback | User has no funds for paid APIs; guided sample remains usable without credentials | User explicitly changes budget/provider constraints |
+| D17 | Up to 500 files, cached JS/TS symbol/import map, bounded lexical retrieval with disclosed scope | Larger student projects require navigation beyond a first-files sample | Retrieval misses, context limits or measured latency justify deeper analysis |
+| D18 | Light/dark/system theme, accessible motion and optional browser dictation | User wants an interactive conversation with the computer | Manual accessibility and actual microphone trials |
+
+D15–D18 supersede the earlier mock-only, small-input and post-session-only feedback defaults in D01/D07/D12/D14. The paid-billing architecture remains a future target; no purchase is authorized. Browser speech recognition can use a vendor service, and the app discloses this before optional use.
 
 Current implementation refinements and actual verification are recorded in [implementation status](16-implementation-status.md). These do not remove original release gates.
 
@@ -25,12 +31,12 @@ Current implementation refinements and actual verification are recorded in [impl
 | Choice | Working default | Needed by | Blocking? |
 | --- | --- | --- | --- |
 | Student project stack | JS/TS web apps | Day 1 pilot discovery | Only specialised parser/example content |
-| AI provider/model | Mock locally; one real structured-output provider after comparison | Day 1–2 | Real interviewing and quality/cost claims |
+| AI provider/model | Guided default; Groq Free or local Ollama implemented but not externally evaluated | Before own-project AI trial | Requires free key or installed local model |
 | Hosting account | Container web+worker + managed PostgreSQL | Day 3 | Public deployment |
-| Spend ceiling | Paid mode disabled until positive caps configured | Before paid calls | Paid integration only |
+| Spend ceiling | No paid adapters; atomic daily/entity request limits for free/local mode | Before real calls | Keep hosted account on Free |
 | Branding | Defend working name | Before public launch | No |
 | Auth | Private guest cookie with export | Fixed v0.1 | No |
-| Built-in microphone | Deferred; external dictation supported | Future | No |
+| Built-in microphone | Optional browser recognition implemented; real-device QA open | Before voice-quality claims | No; text fallback works |
 
 Credentials must be configured through secret storage, not pasted into docs or chat. No need to delay scaffold, mock vertical slice, contracts, UI or domain tests while provider/hosting choices are pending.
 

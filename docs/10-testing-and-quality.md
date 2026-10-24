@@ -4,6 +4,8 @@ Test meaningful failure boundaries. Pure domain tests cover transitions and inva
 
 Implemented tools: pinned Vitest for domain/API tests and Playwright for browser checks. Commands now work as described in the developer guide. The evaluation runner performs mechanical mock checks only; real-provider semantic evaluation remains a release gate. See [actual local evidence](16-implementation-status.md).
 
+Coaching tests cover intentionally bad, confidently wrong and concise correct sample answers, assisted revisions, bounded follow-ups, missing context and ending during unavailable coaching. Retrieval tests cover 500 files, relative imports and no code execution. Real PostgreSQL tests stub Groq/Ollama transport to verify schema, quotas and no fallback; they establish adapter mechanics, not external model quality. Browser speech recognition is simulated to check text handoff and review-before-send; actual microphone/audio QA remains manual.
+
 ## Requirement traceability
 | Test ID | Requirements | Scenario and pass condition |
 | --- | --- | --- |

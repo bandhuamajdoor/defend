@@ -1,5 +1,5 @@
 # Development documentation
-Version 0.1 — 24 October 2026. These documents define the release target. A local mock preview is now implemented; see [implementation status and evidence](16-implementation-status.md) for what works and what remains unverified.
+Version 1 preview — 25 October 2026. These documents define the release target and current implementation. Conversational coaching, themes, larger folders and free/local model adapters are implemented; see [implementation status and evidence](16-implementation-status.md) for actual verification and [free AI setup](17-free-ai-setup.md) for activation.
 
 ## Read in this order
 1. [Product requirements](01-product-requirements.md): users, scope, requirement IDs and acceptance.
@@ -19,6 +19,7 @@ Version 0.1 — 24 October 2026. These documents define the release target. A lo
 - [Behavioural evaluation cases](fixtures/evaluation-cases.json).
 - [Example environment](../.env.example).
 - [Research and source links](defend-architecture-research.md).
+- [Free AI setup and limitations](17-free-ai-setup.md).
 
 ## Authority and change control
 Requirements define product scope; domain schema defines field names/enums; OpenAPI defines routes; controller spec defines transitions; data spec defines persistence. Research is background, not a competing specification. Contradictions are defects: update the affected documents and examples together, never silently choose one.

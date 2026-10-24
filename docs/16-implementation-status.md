@@ -1,43 +1,34 @@
 # Implementation status and verification
 
-24 October 2026 · local mock preview. Original requirements remain the target release specification.
+25 October 2026 · conversational V1 preview. User-requested refinements are recorded as D15–D18 in the decision log.
 
 ## Implemented
-- Isolated guest sample and selected-text upload, consent, secret/path/encoding/size checks, immutable sources and complete line-window evidence.
-- Editable brief, frozen confirmation revision and practice history.
-- Persistent interview, answer-dependent template follow-ups, pause/resume/skip/clarify/end, active-time/event caps and optional browser speech.
-- Idempotency, stale-tab rejection, durable jobs, lease/revision publication fences and bounded retries.
-- Honest mock report with exact quotations/source excerpts, escaped JSON/HTML exports, disputed-feedback receipt and fresh two-topic retest.
-- Ownership checks, exact Origin validation, opaque hashed cookies, shared rate limits, deletion revocation and worker purge.
-- Responsive layout, keyboard focus, native dialogs, reduced motion and text fallback.
+- Light/dark/system theme with persistent preference, page/chat arrival, hover and landing animations, reduced-motion support.
+- Conversation history, feedback after each answer, specific strengths/improvements, illustrative answers, manageable retries, source inspection and good-answer refinements.
+- Exact sample checklist with source-grounded corrections; own-source communication coaching is explicitly unassessed technically until a model is connected.
+- Strict Groq Free and loopback Ollama adapters, provider consent/provenance, atomic request caps, usage/status records, timeout/response bounds and no paid/sample fallback.
+- Optional browser dictation and speech, review-before-send, text fallback. Defend does not store audio.
+- Folder/file upload up to 500 files / 8 MiB / 2,000,000 characters, visible exclusions, complete line windows, cached JS/TS syntax/import map and bounded lexical retrieval. Coverage distinguishes indexing from model review.
+- Immutable source and answer history, persisted coaching, assisted revisions, reports with exact quotations, practice tasks, export/dispute and focused retest.
+- Guest ownership, Origin validation, idempotency, durable PostgreSQL jobs, lease/revision fences, bounded retries, deletion/expiry and purge. Explicit End can summarize saved coaching even during a provider outage.
 
 ## Verification
 | Check | Actual local result |
 | --- | --- |
-| Domain tests | 28 passing: upload boundaries, transitions, timing, budgets, quotations and escaping |
-| PostgreSQL integration | 11 passing: contracts, isolation, confirmation, double submission, tab conflict, pause/end race, lease reclamation, retries, exports, retest, deletion |
-| Chromium browser | Seven scenarios passed: sample, keyboard input, recovery/controls, report/export/dispute, retest, own upload, mobile/delete-all |
-| Accessibility | Automated WCAG A/AA overview scan passed after contrast fixes; full manual audit remains open |
-| Build | Optimized Next.js web and independent worker compile locally |
-| Dependency audit | No known vulnerabilities reported at this build |
-| Evaluation | Twelve mechanical schema/quotation checks; semantic quality explicitly not evaluated |
+| Domain/coaching tests | 44 passing: boundaries, controller, weak/wrong/good sample answers, assisted revisions, retrieval, malformed Unicode and model contracts |
+| PostgreSQL integration | 16 passing: API contracts/isolation, races/recovery, saved coaching/report/export/retest/deletion, synthetic model transports/quotas, 500-file scope, End without another model call |
+| Chromium browser | Nine scenarios passed: theme persistence, light/dark accessibility, sample conversation, simulated dictation, lost response, correction/revision, report/export/dispute, retest, folder exclusions, mobile/setup/delete-all |
+| Accessibility | Automated WCAG A/AA light, dark and conversation scans passed; full manual audit remains open |
+| Build | Optimized Next.js web and independent worker compiled locally |
+| Evaluation | Twelve legacy mechanical schema/quotation checks; no external semantic model evaluation |
 
-Generated evidence: output/playwright/ and output/evals/, gitignored to prevent accidental publication of private fixtures. Reproduce with the developer guide. Release evidence still needs the final commit, environment and human reviewer.
+Generated screenshots, scans and results live under gitignored output/playwright/ and output/evals/. Reproduce with the developer guide. Browser recognition uses a test double; no actual microphone was tested. Transport stubs do not establish Groq/Ollama coaching quality.
 
-## Initial refinements
-1. One hashed guest credential is stored on Owner instead of a separate credentials table; multiple credentials/rotation are pending.
-2. Session JSON is the canonical controller snapshot, alongside normalized immutable questions, answers and control events. Owner advisory locks plus lease/revision checks fence concurrent writes.
-3. Complete 60-line windows are labelled as line-window indexing; AST semantic indexing is pending. Accepted files are never silently truncated.
-4. Expiry is fixed at creation: seven days, samples 24 hours. Activity-based extension is pending and UI discloses current behaviour.
-5. Only mock mode is permitted; other configurations fail closed. Paid usage reservations and cost telemetry are deferred until a real adapter exists.
-6. An ownership-scoped project-session history endpoint is added to schema/OpenAPI/examples. Retest plans never replace normal project plans.
+## Remaining release work
+- A free Groq key or installed local Ollama model is still needed for real own-project AI coaching. No external inference or model download was performed here.
+- Human-reviewed relevance, factual grounding, quality, latency and hardware measurements on actual large projects. A synthetic 500-file test proves bounded indexing/retrieval plumbing only.
+- Full keyboard/screen-reader/200% zoom, cross-browser and real speech/Wispr trials.
+- Hosted staging/container verification, actual process-kill/restart rehearsal, encrypted backups/restore and provider-retention configuration. Docker is unavailable locally; public hosting is not configured.
+- Five real classmate trials, honest pilot outcomes, demo video and submission assets.
 
-## Remaining live-release work
-- Real model adapter, provider consent, token budgets, spend reservations, cost/latency telemetry, semantic grounding and useful calibrated assessment.
-- Real-provider behavioural evaluation and technical peer review, including correction handling and prior coaching context.
-- Semantic JS/TS indexing, activity-based expiry and replacement-version UI (the version API exists).
-- Container/hosted staging verification, actual process-kill/restart rehearsal, encrypted backups, restore/deletion-receipt replay and provider-retention configuration.
-- Full keyboard-only, screen-reader, 200% zoom, speech/Wispr and cross-browser manual verification.
-- Five real classmate trials, honest pilot results, public deployment, demo video and submission assets.
-
-No public deployment or paid calls were performed. Docker is unavailable on the current host. Prepared CI/container definitions do not establish hosted success. This preview is not an AI-quality result or a completed hackathon release.
+Expiry remains fixed at creation (seven days, samples 24 hours); sliding activity expiry and replacement-version UI are pending. The version API exists. No overall numeric grade, learning-effect claim or full-repository-understanding claim is made. This preview is ready for local critique, with real AI quality and hosted operations still open.

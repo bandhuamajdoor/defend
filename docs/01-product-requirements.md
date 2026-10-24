@@ -5,7 +5,7 @@ Students can build a functioning project but struggle to explain its actual impl
 Job: “Help me practise defending this project, reveal gaps fairly, and give me a focused way to improve.”
 
 ## Release scope
-The release is a complete desktop-first English practice product for small JavaScript/TypeScript web projects. Python/plain-text files may be accepted as context, but specialised analysis is only claimed for the tested JS/TS scope. Student stack remains an assumption to validate on day one. Normal interview: five planned topics, target 5–8 minutes, hard cap 12 submitted answers or 12 active minutes. Time is a product pacing target, never a competency signal. Retest: two topics, six answers or six active minutes. No forced submission of an unfinished answer.
+The release is a complete desktop-first English practice product for JavaScript/TypeScript web projects, including focused slices from larger repositories within disclosed upload/retrieval limits. Python/plain-text files may be accepted as context, but specialised analysis is only claimed for the tested JS/TS scope. Student stack remains an assumption to validate in trials. Normal interview: five planned topics, target 5–8 minutes, hard cap 12 submitted answers or 12 active minutes. Time is a product pacing target, never a competency signal. Retest: two topics, six answers or six active minutes. No forced submission of an unfinished answer.
 
 ## Requirements
 | ID | Requirement | Acceptance |
@@ -27,10 +27,10 @@ The release is a complete desktop-first English practice product for small JavaS
 | R15 | Honest failures | Provider failure offers retry; unavailable evidence is explicit; no sample feedback substituted for live results. |
 
 ## Exclusions
-No hiring decisions, proctoring, emotion/face analysis, accent scoring, plagiarism/authorship verdicts, avatars, live coding execution, automatic fixes, arbitrary GitHub URL fetching, ZIP/PDF ingestion, realtime barge-in, billing, institution administration or team accounts. Built-in microphone transcription is a later adapter; the initial product supports external dictation.
+No hiring decisions, proctoring, emotion/face analysis, accent scoring, plagiarism/authorship verdicts, avatars, live coding execution, automatic fixes, arbitrary GitHub URL fetching, ZIP/PDF ingestion, realtime barge-in, billing, institution administration or team accounts. Optional browser microphone transcription and external dictation both feed a reviewable text composer.
 
 ## Experience principles
-The interviewer is curious, calm and technically precise. It asks for reasoning, accepts a correction, and never treats a missing file as proof of a defect. Feedback follows the session; hints are only given when explicitly requested through a clarify action and are recorded. Praise must be specific and justified.
+The interviewer is curious, calm and technically precise. It asks for reasoning, accepts a correction, and never treats a missing file as proof of a defect. Per the user's V1 critique, feedback follows every answer: explain what worked, why reasoning was weak or wrong, and a concrete improvement. Even sound answers receive a small refinement. The next attempt is labelled assisted after coaching. The final report preserves earlier answers and revisions. Praise must be specific and justified. Free/local backends, persistent dark mode and accessible motion support the practice experience.
 
 ## Success and release measures
 Targets are not achieved claims:

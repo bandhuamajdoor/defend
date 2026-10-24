@@ -24,6 +24,8 @@ Log request/job/session IDs, states, timings, token counts and error codes. Excl
 Track accepted-to-published latency separately from speech playback and upload time.
 
 ## Budget control
+Current preview: paid adapters are disabled; free/local attempts use atomic request allowances and ModelCall usage/status records. See [free AI setup](17-free-ai-setup.md). The following monetary-reservation policy is a future requirement if paid providers are ever authorized.
+
 Atomic reservation before queueing paid work; reconcile actual usage and retain safety margin for ambiguous timeout billing. If price configuration is missing, fail closed. On quota exhaustion allow read/export/delete and return a useful message for new generation. Operator override must be explicit and logged. No automatic provider purchase or credit top-up.
 
 ## Runbooks

@@ -1,7 +1,7 @@
 # UX and content specification
 ## Main flow
 Landing -> choose sample or upload -> preparation -> confirm brief -> interview -> debrief -> focused retest.
-Persistent navigation: projects, current interview, privacy/delete. No institutional dashboard in this release.
+Persistent navigation: projects, current interview, coach setup, privacy/delete. Appearance offers Light, Dark and System with a persistent cookie preference. No institutional dashboard in this release.
 
 ## Screens
 | Route | Contents and primary action | Required non-happy states |
@@ -12,8 +12,12 @@ Persistent navigation: projects, current interview, privacy/delete. No instituti
 | /sessions/:id | Interviewer question, topic progress, optional evidence drawer, answer composer, controls | Generating, paused, retry-needed, network lost, stale tab, resumed, ended. |
 | /sessions/:id/report | Findings, strengths, unresolved context, evidence, next practice, export | Preparing, failed/retry, no substantive answers, partial interview. |
 | /privacy | Actual provider disclosure, retention, delete project/all | Pending deletion, failure/retry, confirmation. |
+| /settings | Guided/current backend disclosure, free Groq and local Ollama setup instructions | Missing configuration; no key input or key storage in the browser. |
 
 ## Interview layout
+The conversation shows accepted student turns and coach feedback with specific strengths, improvements, optional illustrative answers and source links. Weak answers can be revised within a bounded topic loop; good answers receive a small refinement before progression. New messages scroll into view only while the student is already following the end; reading older messages preserves their position. Feedback never moves keyboard focus. A Jump to latest control is available.
+
+Optional browser dictation appends to the same textarea, shows actual interim transcript/listening state and requires Stop and review before Send. Browser speech can read the next question/feedback. Both are optional and all flows work with text alone. No audio recording is stored by Defend; browser speech services may process audio.
 Desktop: central conversation; collapsible right evidence panel; sticky answer composer and controls. Mobile stacks these without horizontal page scrolling; code scrolls within its panel. Display previous turns compactly, current question prominently. Show “Question 3 · Design decisions”, not a live competency score.
 
 Composer is a standard accessible textarea: multi-line, dictation-friendly and focused only after intentional navigation. Do not grab focus when streaming updates arrive. Send button and Ctrl/Cmd+Enter submit; plain Enter adds a newline. Stop speech on focus/Send to avoid overlapping output; a user toggle may preserve manual playback. Draft remains local in component memory during ordinary retries; never clear before server acceptance. No source/transcript persistence in browser localStorage in v0.1. Warn before abandoning an unsent draft; reload recovers accepted answers only.
@@ -38,7 +42,7 @@ Each finding contains answer quotation, rationale, uncertainty, source excerpt w
 Retest control selects one or two concept IDs and links to original report. Allow marking feedback “This seems wrong” with a note; v0.1 saves a review request and acknowledges it, not an automatic score rewrite.
 
 ## Visual direction
-Calm interview workspace: neutral surfaces, one accent colour, strong type hierarchy, restrained motion. Use statuses with text and icons, never colour alone. No avatar required. A small speaking indicator reflects actual playback, never a fake microphone state.
+Calm interview workspace: neutral surfaces, one accent colour, strong type hierarchy. Page/chat arrival, hover lift and busy indicators are subtle; the landing scene has more visible finite motion. Respect reduced-motion preferences throughout. Use statuses with text and icons, never colour alone. No avatar required. A small speaking indicator reflects actual playback, never a fake microphone state.
 
 ## Accessibility and copy
 Visible focus, labelled controls, dialogs with focus return, contrast to WCAG AA targets, scalable type, reduced motion. Announce completion/error once using a polite live region; do not read every transcript token aloud. All tasks work muted.

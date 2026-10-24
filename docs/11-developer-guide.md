@@ -30,7 +30,7 @@ Open http://localhost:3000 to match APP_ORIGIN. Health checks DB access and a wo
 - src/components/screens: separate screens; shared hooks/controls in src/components.
 - src/domain: pure controller, types and runtime contract validation.
 - src/services: API orchestration, ingestion, evidence and exports.
-- src/providers: explicit deterministic development adapter.
+- src/providers: guided sample/structure coaching, free/local structured transports and orchestration. See [free AI setup](17-free-ai-setup.md).
 - src/jobs, src/db and src/worker.ts: persistence, queue, worker and maintenance.
 - prisma: schema/migrations; tests: domain and real DB integration.
 - evals: ground truth and mechanical fixtures; scripts/browser-smoke.mjs: browser acceptance checks.
