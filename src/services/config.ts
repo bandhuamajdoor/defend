@@ -16,10 +16,14 @@ export function checkConfig() {
       "Run npm run setup to configure the local environment.",
       503,
     );
+  const url = new URL(origin());
   if (
     process.env.NODE_ENV === "production" &&
-    !process.env.APP_ORIGIN?.startsWith("https://") &&
-    !process.env.APP_ORIGIN?.startsWith("http://localhost")
+    url.protocol !== "https:" &&
+    !(
+      url.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
+    )
   )
     throw new AppError(
       "DEPENDENCY_UNAVAILABLE",
