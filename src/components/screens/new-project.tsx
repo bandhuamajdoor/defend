@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Check,
   FileCode2,
+  FolderOpen,
   LockKeyhole,
   Sparkles,
   Upload as UploadIcon,
@@ -16,28 +17,70 @@ import { ensureGuest } from "@/components/client";
 import { ErrorNotice } from "@/components/ui";
 import { useMutation } from "@/components/hooks";
 import { Consent } from "@/components/consent";
+import { useRuntime } from "@/components/runtime";
+import { uploadLimits, exclusionReason } from "@/domain/upload-limits";
 
 export function NewProject() {
   const router = useRouter();
+  const runtime = useRuntime();
   const [files, setFiles] = useState<SourceInput[]>([]),
     [consent, setConsent] = useState(false),
     [fileError, setFileError] = useState(""),
-    [ready, setReady] = useState(false);
+    [ready, setReady] = useState(false),
+    [reading, setReading] = useState(false),
+    [dragging, setDragging] = useState(false),
+    [excluded, setExcluded] = useState<{ path: string; reason: string }[]>([]);
   useEffect(() => setReady(true), []);
   const mutation = useMutation();
   const input = useRef<HTMLInputElement>(null);
+  const folder = useRef<HTMLInputElement>(null);
   async function select(list: FileList | null) {
     if (!list) return;
     setFileError("");
+    setReading(true);
     try {
-      if (files.length + list.length > 20)
-        throw new Error("Choose at most 20 files.");
+      const candidates = Array.from(list).map((file) => ({
+        file,
+        path: file.webkitRelativePath
+          ? file.webkitRelativePath.split("/").slice(1).join("/")
+          : file.name,
+      }));
+      const skipped = candidates
+        .map((c) => ({
+          path: c.path,
+          reason:
+            exclusionReason(c.path) ??
+            (c.file.size > uploadLimits.fileBytes ? "Exceeds 256 KiB" : null),
+        }))
+        .filter((c): c is { path: string; reason: string } => !!c.reason);
+      setExcluded(skipped);
+      const eligible = candidates.filter(
+        (c) => !skipped.some((s) => s.path === c.path),
+      );
+      if (files.length + eligible.length > uploadLimits.files)
+        throw new Error(
+          "Choose up to 500 source files. Narrow this folder to the feature you want to practise.",
+        );
+      if (
+        eligible.reduce((n, c) => n + c.file.size, 0) +
+          files.reduce(
+            (n, f) => n + new TextEncoder().encode(f.text).length,
+            0,
+          ) >
+        uploadLimits.totalBytes
+      )
+        throw new Error(
+          "The source exceeds 8 MiB. Choose the main feature or a smaller folder.",
+        );
+      if (!eligible.length)
+        throw new Error(
+          "No supported source files were found. Review the exclusions below.",
+        );
       const selected = await Promise.all(
-        Array.from(list).map(async (f) => {
-          if (f.size > 65536) throw new Error(`${f.name} exceeds 64 KiB.`);
+        eligible.map(async ({ file: f, path }) => {
           const buffer = await f.arrayBuffer();
           const text = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
-          return { path: f.webkitRelativePath || f.name, text };
+          return { path, text };
         }),
       );
       const combined = [...files, ...selected];
@@ -50,14 +93,20 @@ export function NewProject() {
         combined.reduce(
           (n, f) => n + new TextEncoder().encode(f.text).length,
           0,
-        ) > 524288
+        ) > uploadLimits.totalBytes ||
+        combined.reduce((n, f) => n + f.text.length, 0) >
+          uploadLimits.totalCharacters
       )
-        throw new Error("The selected files exceed 512 KiB.");
+        throw new Error(
+          "The selected source exceeds 8 MiB or 2,000,000 characters. Choose a smaller scope.",
+        );
       setFiles(combined);
     } catch (e) {
       setFileError((e as Error).message);
     } finally {
       if (input.current) input.current.value = "";
+      if (folder.current) folder.current.value = "";
+      setReading(false);
     }
   }
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -71,6 +120,7 @@ export function NewProject() {
         contribution: data.get("contribution"),
         files,
         consent,
+        consentVersion: runtime?.consentVersion,
       });
       if (op) router.push(`/projects/${op.resourceId}?job=${op.jobId}`);
     } catch (e) {
@@ -132,25 +182,85 @@ export function NewProject() {
             className="sr-only"
             ref={input}
             type="file"
-            disabled={!ready}
+            disabled={!ready || reading}
             multiple
-            accept=".md,.txt,.js,.jsx,.ts,.tsx,.json,.py,.sql,.css,.html,.yaml,.yml"
+            accept=".md,.txt,.js,.jsx,.mjs,.cjs,.ts,.tsx,.json,.py,.sql,.css,.html,.yaml,.yml"
             onChange={(e) => void select(e.target.files)}
             aria-label="Select project files"
           />
           <button
             type="button"
-            className="dropzone"
-            disabled={!ready}
+            className={`dropzone ${dragging ? "is-dragging" : ""}`}
+            disabled={!ready || reading}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              void select(e.dataTransfer.files);
+            }}
             onClick={() => input.current?.click()}
           >
             <span className="upload-circle">
               <UploadIcon size={23} />
             </span>
-            <strong>Choose your project files</strong>
-            <span>Selected text files · up to 20 files, 64 KiB each</span>
-            <small>512 KiB and 120,000 characters total</small>
+            <strong>
+              {reading
+                ? "Reading selected source…"
+                : "Drop source files, or choose files"}
+            </strong>
+            <span>Up to 500 source files · 256 KiB each</span>
+            <small>
+              8 MiB and 2,000,000 characters total · no code execution
+            </small>
           </button>
+          <input
+            ref={(el) => {
+              folder.current = el;
+              el?.setAttribute("webkitdirectory", "");
+            }}
+            disabled={!ready || reading}
+            className="sr-only"
+            type="file"
+            multiple
+            onChange={(e) => void select(e.target.files)}
+            aria-label="Select project folder"
+          />
+          <div className="upload-actions">
+            <button
+              className="folder-button"
+              type="button"
+              disabled={!ready || reading}
+              onClick={() => folder.current?.click()}
+            >
+              <FolderOpen size={17} />
+              Choose a folder
+            </button>
+          </div>
+          <p className="upload-status">
+            {files.length
+              ? `${files.length} source files selected · ${(files.reduce((n, f) => n + new TextEncoder().encode(f.text).length, 0) / 1024).toFixed(1)} KiB. `
+              : ""}
+            A folder keeps relative paths. Dependencies, generated output and
+            secret files are excluded before upload.
+          </p>
+          {excluded.length > 0 && (
+            <details className="upload-exclusions">
+              <summary>
+                {excluded.length} files excluded — review before continuing
+              </summary>
+              <ul>
+                {excluded.map((f, i) => (
+                  <li key={`${f.path}-${i}`}>
+                    {f.path} · {f.reason}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
           {files.length > 0 && (
             <ul className="file-list">
               {files.map((f, i) => (
@@ -182,7 +292,7 @@ export function NewProject() {
             <button
               className="btn primary"
               type="submit"
-              disabled={!consent || !files.length || mutation.busy}
+              disabled={!consent || !files.length || mutation.busy || reading}
             >
               {mutation.busy ? "Saving project…" : "Prepare my project"}
               <ArrowRight size={16} />
@@ -227,10 +337,11 @@ export function NewProject() {
             best-effort; review your files first.
           </p>
           <div className="notice">
-            <strong>About this preview</strong>
+            <strong>{runtime?.label ?? "Coach configuration"}</strong>
             <p>
-              The mock adapter uses your description to make a practice plan.
-              Live AI analysis is not enabled.
+              {runtime?.dataDisclosure ?? "Loading coach configuration…"} A
+              large project is indexed first; each answer uses focused source
+              excerpts. The app never claims every file was understood.
             </p>
           </div>
         </aside>

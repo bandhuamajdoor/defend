@@ -150,6 +150,28 @@ export function Project({ id }: { id: string }) {
           )}{" "}
           {plan && (
             <>
+              {plan.content.coverage && (
+                <div className="coverage-card">
+                  <h3>What the coach can see</h3>
+                  <div className="coverage-stats">
+                    <span>
+                      {plan.content.coverage.indexedFiles} files indexed
+                    </span>
+                    <span>
+                      {plan.content.coverage.indexedExcerpts} source windows
+                    </span>
+                    <span>
+                      {plan.content.coverage.reviewedExcerpts} excerpts reviewed
+                      by a model
+                    </span>
+                  </div>
+                  <p>
+                    The file map covers accepted source. Each answer retrieves a
+                    small, relevant evidence pack. Unreviewed code remains
+                    uncertain.
+                  </p>
+                </div>
+              )}
               <label>
                 Project summary
                 <textarea
