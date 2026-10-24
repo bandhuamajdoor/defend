@@ -1,0 +1,1433 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://defend.invalid/contracts/domain.schema.json",
+  "title": "Defend v0.1 domain and transport schemas",
+  "description": "Planned contract; semantic invariants are specified in the accompanying documents.",
+  "$defs": {
+    "RetestPlan": {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "contribution": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 500
+      },
+      "maxItems": 20,
+      "minItems": 0
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Topic"
+      },
+      "maxItems": 2,
+      "minItems": 2
+    }
+  },
+  "required": [
+    "summary",
+    "contribution",
+    "uncertainties",
+    "topics"
+  ]
+},
+    "ConsentRequest": {"type":"object","additionalProperties":false,"properties":{"consent":{"type":"boolean","const":true}},"required":["consent"]},
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "Phase": {
+      "type": "string",
+      "enum": [
+        "introduction",
+        "walkthrough",
+        "technical_depth",
+        "failure_scenario",
+        "reflection",
+        "complete"
+      ]
+    },
+    "SessionStatus": {
+      "type": "string",
+      "enum": [
+        "preparing",
+        "awaiting_answer",
+        "generating",
+        "paused",
+        "generation_failed",
+        "evaluating",
+        "evaluation_failed",
+        "completed"
+      ]
+    },
+    "CriterionId": {
+      "type": "string",
+      "enum": [
+        "implementation",
+        "design",
+        "failure",
+        "limits"
+      ]
+    },
+    "Evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "versionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fileId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "startLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "endLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "excerpt": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 30000
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "versionId",
+        "fileId",
+        "path",
+        "startLine",
+        "endLine",
+        "excerpt",
+        "sha256"
+      ]
+    },
+    "SourceInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "text": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 120000
+        }
+      },
+      "required": [
+        "path",
+        "text"
+      ]
+    },
+    "ProjectUpload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "brief": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "contribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "consent": {
+          "const": true,
+          "type": "boolean"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceInput"
+          },
+          "maxItems": 20,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "title",
+        "brief",
+        "contribution",
+        "consent",
+        "files"
+      ]
+    },
+    "Topic": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "phase": {
+          "$ref": "#/$defs/Phase"
+        },
+        "conceptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "objective": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "openingQuestion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        }
+      },
+      "required": [
+        "id",
+        "phase",
+        "conceptId",
+        "objective",
+        "openingQuestion",
+        "evidenceIds"
+      ]
+    },
+    "PreparedPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "contribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "uncertainties": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 500
+          },
+          "maxItems": 20,
+          "minItems": 0
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Topic"
+          },
+          "maxItems": 5,
+          "minItems": 5
+        }
+      },
+      "required": [
+        "summary",
+        "contribution",
+        "uncertainties",
+        "topics"
+      ]
+    },
+    "Plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "confirmed": {
+          "type": "boolean"
+        },
+        "content": {
+          "$ref": "#/$defs/PreparedPlan"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "confirmed",
+        "content"
+      ]
+    },
+    "Version": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "preparing",
+            "ready",
+            "failed"
+          ]
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "byteSize": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "lineCount": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "id",
+              "path",
+              "byteSize",
+              "lineCount"
+            ]
+          },
+          "maxItems": 20,
+          "minItems": 1
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Plan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "ordinal",
+        "status",
+        "files",
+        "plan"
+      ]
+    },
+    "ProjectSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "createdAt",
+        "expiresAt"
+      ]
+    },
+    "Project": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Version"
+          },
+          "maxItems": 100,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "createdAt",
+        "expiresAt",
+        "versions"
+      ]
+    },
+    "ProjectList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectSummary"
+          },
+          "maxItems": 100,
+          "minItems": 0
+        }
+      },
+      "required": [
+        "projects"
+      ]
+    },
+    "ConfirmRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "versionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "contribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "versionId",
+        "expectedRevision",
+        "summary",
+        "contribution"
+      ]
+    },
+    "Confirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "versionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "planId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "confirmed": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "projectId",
+        "versionId",
+        "planId",
+        "revision",
+        "confirmed"
+      ]
+    },
+    "Guest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "expiresAt"
+      ]
+    },
+    "Operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resourceId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "jobId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted"
+          ]
+        }
+      },
+      "required": [
+        "resourceId",
+        "revision",
+        "jobId",
+        "status"
+      ]
+    },
+    "Deletion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "receiptId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted"
+          ]
+        }
+      },
+      "required": [
+        "receiptId",
+        "status"
+      ]
+    },
+    "SessionCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "versionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "planId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "projectId",
+        "versionId",
+        "planId",
+        "expectedRevision"
+      ]
+    },
+    "AnswerRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "questionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "turnId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000
+        }
+      },
+      "required": [
+        "questionId",
+        "turnId",
+        "expectedRevision",
+        "text"
+      ]
+    },
+    "ControlRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "pause",
+            "resume",
+            "skip",
+            "clarify",
+            "end"
+          ]
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "action",
+        "expectedRevision"
+      ]
+    },
+    "Question": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "topicId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "opening",
+            "follow_up",
+            "clarification"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "topicId",
+        "text",
+        "kind",
+        "evidence",
+        "createdAt"
+      ]
+    },
+    "PublicTurn": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "interviewer",
+            "student",
+            "system"
+          ]
+        },
+        "questionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 8000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "questionId",
+        "text",
+        "createdAt"
+      ]
+    },
+    "Session": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "projectId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "versionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "normal",
+            "retest"
+          ]
+        },
+        "status": {
+          "$ref": "#/$defs/SessionStatus"
+        },
+        "phase": {
+          "$ref": "#/$defs/Phase"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "currentQuestion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Question"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "turns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PublicTurn"
+          },
+          "maxItems": 100,
+          "minItems": 0
+        },
+        "activeSeconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "budgetReached": {
+          "type": "boolean"
+        },
+        "reportId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "versionId",
+        "mode",
+        "status",
+        "phase",
+        "revision",
+        "currentQuestion",
+        "turns",
+        "activeSeconds",
+        "budgetReached",
+        "reportId"
+      ]
+    },
+    "Job": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "prepare_project",
+            "generate_turn",
+            "clarify_turn",
+            "evaluate_session"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ]
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resultId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "errorCode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 80
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "status",
+        "attempts",
+        "resultId",
+        "errorCode",
+        "retryable"
+      ]
+    },
+    "ClaimUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "answerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "conceptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "supported",
+            "contradicted",
+            "unresolved"
+          ]
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "answerId",
+        "conceptId",
+        "quote",
+        "outcome",
+        "evidenceIds",
+        "explanation"
+      ]
+    },
+    "InterviewerDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "ask",
+            "follow_up",
+            "advance_topic",
+            "finish"
+          ]
+        },
+        "topicId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "questionText": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 1000
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        },
+        "claimUpdates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClaimUpdate"
+          },
+          "maxItems": 5,
+          "minItems": 0
+        },
+        "uncertainty": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 1000
+        },
+        "transitionReason": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "action",
+        "topicId",
+        "questionText",
+        "evidenceIds",
+        "claimUpdates",
+        "uncertainty",
+        "transitionReason"
+      ]
+    },
+    "AnswerQuote": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "answerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "answerId",
+        "quote"
+      ]
+    },
+    "CriterionAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "criterionId": {
+          "$ref": "#/$defs/CriterionId"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "demonstrated",
+            "partial",
+            "not_demonstrated",
+            "not_assessed"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "answerQuotes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnswerQuote"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      },
+      "required": [
+        "criterionId",
+        "status",
+        "rationale",
+        "answerQuotes",
+        "confidence"
+      ]
+    },
+    "Finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "criterionId": {
+          "$ref": "#/$defs/CriterionId"
+        },
+        "conceptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "supported",
+            "contradicted",
+            "unresolved"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "answerQuotes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnswerQuote"
+          },
+          "maxItems": 12,
+          "minItems": 1
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        },
+        "uncertainty": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 1000
+        },
+        "practiceTask": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "id",
+        "criterionId",
+        "conceptId",
+        "outcome",
+        "title",
+        "rationale",
+        "answerQuotes",
+        "evidenceIds",
+        "uncertainty",
+        "practiceTask"
+      ]
+    },
+    "ReportContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "partial": {
+          "type": "boolean"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "criteria": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CriterionAssessment"
+          },
+          "maxItems": 4,
+          "minItems": 4
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "maxItems": 8,
+          "minItems": 0
+        },
+        "practiceTasks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "maxItems": 3,
+          "minItems": 0
+        },
+        "unassessedTopics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          },
+          "maxItems": 10,
+          "minItems": 0
+        }
+      },
+      "required": [
+        "partial",
+        "summary",
+        "criteria",
+        "findings",
+        "practiceTasks",
+        "unassessedTopics"
+      ]
+    },
+    "Report": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "sessionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rubricVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "content": {
+          "$ref": "#/$defs/ReportContent"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "maxItems": 100,
+          "minItems": 0
+        }
+      },
+      "required": [
+        "id",
+        "sessionId",
+        "revision",
+        "rubricVersion",
+        "createdAt",
+        "content",
+        "evidence"
+      ]
+    },
+    "RetestRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reportId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "conceptIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "maxItems": 2,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "reportId",
+        "conceptIds"
+      ]
+    },
+    "FeedbackRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "findingId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "findingId",
+        "note"
+      ]
+    },
+    "FeedbackReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "recorded"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "status"
+      ]
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_INPUT",
+                "UNAUTHENTICATED",
+                "NOT_FOUND",
+                "STALE_REVISION",
+                "INVALID_STATE",
+                "IDEMPOTENCY_CONFLICT",
+                "LIMIT_EXCEEDED",
+                "UNSUPPORTED_FILE",
+                "POTENTIAL_SECRET",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "requestId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "currentRevision": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "code",
+            "message",
+            "requestId",
+            "retryable"
+          ]
+        }
+      },
+      "required": [
+        "error"
+      ]
+    },
+    "Health": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "unavailable"
+          ]
+        }
+      },
+      "required": [
+        "status"
+      ]
+    }
+  }
+}
+

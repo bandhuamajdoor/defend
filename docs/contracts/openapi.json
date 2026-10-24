@@ -1,0 +1,968 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Defend API",
+    "version": "0.1.0",
+    "description": "Planned API. Ownership, Origin checking, idempotency and revision rules are mandatory; see ../05-api-contract.md."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "guestCookie": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "guestCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "defend_guest"
+      }
+    }
+  },
+  "paths": {
+    "/guest": {
+      "post": {
+        "operationId": "createGuest",
+        "summary": "Create or reuse an anonymous owner cookie",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Create or reuse an anonymous owner cookie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Guest"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/projects": {
+      "get": {
+        "operationId": "listProjects",
+        "summary": "List owned projects",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List owned projects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/ProjectList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "uploadProject",
+        "summary": "Persist project and queue preparation",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persist project and queue preparation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./domain.schema.json#/$defs/ProjectUpload"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/sample": {
+      "post": {
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"$ref":"./domain.schema.json#/$defs/ConsentRequest"}}}},
+        "operationId": "createSample",
+        "summary": "Copy the built-in sample and queue preparation",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Copy the built-in sample and queue preparation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}": {
+      "get": {
+        "operationId": "getProject",
+        "summary": "Get project metadata and latest plan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get project metadata and latest plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Project"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteProject",
+        "summary": "Revoke access and schedule purge",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Revoke access and schedule purge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Deletion"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/versions": {
+      "post": {
+        "operationId": "uploadVersion",
+        "summary": "Create a complete immutable project version",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Create a complete immutable project version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./domain.schema.json#/$defs/ProjectUpload"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/confirm": {
+      "post": {
+        "operationId": "confirmPlan",
+        "summary": "Confirm current summary and plan revision",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirm current summary and plan revision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Confirmation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./domain.schema.json#/$defs/ConfirmRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions": {
+      "post": {
+        "operationId": "createSession",
+        "summary": "Start normal session from confirmed plan",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Start normal session from confirmed plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./domain.schema.json#/$defs/SessionCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}": {
+      "get": {
+        "operationId": "getSession",
+        "summary": "Get visible canonical interview state",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get visible canonical interview state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/answers": {
+      "post": {
+        "operationId": "submitAnswer",
+        "summary": "Save answer and queue the next turn",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Save answer and queue the next turn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./domain.schema.json#/$defs/AnswerRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/controls": {
+      "post": {
+        "operationId": "controlSession",
+        "summary": "Apply a session control",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Apply a session control",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./domain.schema.json#/$defs/ControlRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}": {
+      "get": {
+        "operationId": "getJob",
+        "summary": "Read owned durable job state",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read owned durable job state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Job"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/retry": {
+      "post": {
+        "operationId": "retryJob",
+        "summary": "Retry compatible failed job without another answer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Retry compatible failed job without another answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/report": {
+      "get": {
+        "operationId": "getReport",
+        "summary": "Read completed report",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read completed report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Report"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Report still queued or running.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/retest": {
+      "post": {
+        "operationId": "createRetest",
+        "summary": "Create targeted session from completed report",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Create targeted session from completed report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./domain.schema.json#/$defs/RetestRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/{reportId}/feedback": {
+      "post": {
+        "operationId": "recordFeedback",
+        "summary": "Record a disputed finding",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reportId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Record a disputed finding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/FeedbackReceipt"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./domain.schema.json#/$defs/FeedbackRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/export": {
+      "get": {
+        "operationId": "exportReport",
+        "summary": "Export canonical report and cited excerpts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "html"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attachment; JSON is the Report contract, HTML is escaped print-friendly report.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Report"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "delete": {
+        "operationId": "deleteOwner",
+        "summary": "Revoke cookie and delete all owner data",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Revoke cookie and delete all owner data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Deletion"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Content-free web readiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Content-free web readiness",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Health"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service dependencies unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Health"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    }
+  }
+}
+

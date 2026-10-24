@@ -1,0 +1,598 @@
+[
+  {
+    "name": "example-1-ProjectUpload",
+    "schema": "ProjectUpload",
+    "value": {
+      "title": "Campus Tickets",
+      "brief": "An event ticket app.",
+      "contribution": "I implemented pricing.",
+      "consent": true,
+      "files": [
+        {
+          "path": "src/price.ts",
+          "text": "export function total(quantity: number, price: number) {\n  return quantity * price;\n}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "example-2-PreparedPlan",
+    "schema": "PreparedPlan",
+    "value": {
+      "summary": "A small ticket app calculates price from quantity.",
+      "contribution": "I implemented pricing.",
+      "uncertainties": [
+        "The UI state handling is not supplied."
+      ],
+      "topics": [
+        {
+          "id": "topic-1",
+          "phase": "introduction",
+          "conceptId": "concept-1",
+          "objective": "Explain the ticket calculation and its assumptions.",
+          "openingQuestion": "What did you build and which part did you work on?",
+          "evidenceIds": []
+        },
+        {
+          "id": "topic-2",
+          "phase": "walkthrough",
+          "conceptId": "concept-2",
+          "objective": "Explain the ticket calculation and its assumptions.",
+          "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+          "evidenceIds": [
+            "00000000-0000-4000-8000-000000000005"
+          ]
+        },
+        {
+          "id": "topic-3",
+          "phase": "technical_depth",
+          "conceptId": "concept-3",
+          "objective": "Explain the ticket calculation and its assumptions.",
+          "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+          "evidenceIds": [
+            "00000000-0000-4000-8000-000000000005"
+          ]
+        },
+        {
+          "id": "topic-4",
+          "phase": "failure_scenario",
+          "conceptId": "concept-4",
+          "objective": "Explain the ticket calculation and its assumptions.",
+          "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+          "evidenceIds": [
+            "00000000-0000-4000-8000-000000000005"
+          ]
+        },
+        {
+          "id": "topic-5",
+          "phase": "reflection",
+          "conceptId": "concept-5",
+          "objective": "Explain the ticket calculation and its assumptions.",
+          "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+          "evidenceIds": [
+            "00000000-0000-4000-8000-000000000005"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "example-3-RetestPlan",
+    "schema": "RetestPlan",
+    "value": {
+      "summary": "A small ticket app calculates price from quantity.",
+      "contribution": "I implemented pricing.",
+      "uncertainties": [
+        "The UI state handling is not supplied."
+      ],
+      "topics": [
+        {
+          "id": "topic-3",
+          "phase": "technical_depth",
+          "conceptId": "concept-3",
+          "objective": "Explain the ticket calculation and its assumptions.",
+          "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+          "evidenceIds": [
+            "00000000-0000-4000-8000-000000000005"
+          ]
+        },
+        {
+          "id": "topic-4",
+          "phase": "failure_scenario",
+          "conceptId": "concept-4",
+          "objective": "Explain the ticket calculation and its assumptions.",
+          "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+          "evidenceIds": [
+            "00000000-0000-4000-8000-000000000005"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "example-4-Project",
+    "schema": "Project",
+    "value": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "title": "Campus Tickets",
+      "createdAt": "2026-10-24T12:00:00Z",
+      "expiresAt": "2026-10-31T12:00:00Z",
+      "versions": [
+        {
+          "id": "00000000-0000-4000-8000-000000000002",
+          "ordinal": 1,
+          "status": "ready",
+          "files": [
+            {
+              "id": "00000000-0000-4000-8000-000000000004",
+              "path": "src/price.ts",
+              "byteSize": 85,
+              "lineCount": 3
+            }
+          ],
+          "plan": {
+            "id": "00000000-0000-4000-8000-000000000003",
+            "revision": 1,
+            "confirmed": false,
+            "content": {
+              "summary": "A small ticket app calculates price from quantity.",
+              "contribution": "I implemented pricing.",
+              "uncertainties": [
+                "The UI state handling is not supplied."
+              ],
+              "topics": [
+                {
+                  "id": "topic-1",
+                  "phase": "introduction",
+                  "conceptId": "concept-1",
+                  "objective": "Explain the ticket calculation and its assumptions.",
+                  "openingQuestion": "What did you build and which part did you work on?",
+                  "evidenceIds": []
+                },
+                {
+                  "id": "topic-2",
+                  "phase": "walkthrough",
+                  "conceptId": "concept-2",
+                  "objective": "Explain the ticket calculation and its assumptions.",
+                  "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+                  "evidenceIds": [
+                    "00000000-0000-4000-8000-000000000005"
+                  ]
+                },
+                {
+                  "id": "topic-3",
+                  "phase": "technical_depth",
+                  "conceptId": "concept-3",
+                  "objective": "Explain the ticket calculation and its assumptions.",
+                  "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+                  "evidenceIds": [
+                    "00000000-0000-4000-8000-000000000005"
+                  ]
+                },
+                {
+                  "id": "topic-4",
+                  "phase": "failure_scenario",
+                  "conceptId": "concept-4",
+                  "objective": "Explain the ticket calculation and its assumptions.",
+                  "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+                  "evidenceIds": [
+                    "00000000-0000-4000-8000-000000000005"
+                  ]
+                },
+                {
+                  "id": "topic-5",
+                  "phase": "reflection",
+                  "conceptId": "concept-5",
+                  "objective": "Explain the ticket calculation and its assumptions.",
+                  "openingQuestion": "Walk me through how the total changes when ticket quantity changes.",
+                  "evidenceIds": [
+                    "00000000-0000-4000-8000-000000000005"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "example-5-ProjectList",
+    "schema": "ProjectList",
+    "value": {
+      "projects": [
+        {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "title": "Campus Tickets",
+          "createdAt": "2026-10-24T12:00:00Z",
+          "expiresAt": "2026-10-31T12:00:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "name": "example-6-ConfirmRequest",
+    "schema": "ConfirmRequest",
+    "value": {
+      "versionId": "00000000-0000-4000-8000-000000000002",
+      "expectedRevision": 1,
+      "summary": "A small ticket app calculates price from quantity.",
+      "contribution": "I implemented pricing."
+    }
+  },
+  {
+    "name": "example-7-Confirmation",
+    "schema": "Confirmation",
+    "value": {
+      "projectId": "00000000-0000-4000-8000-000000000001",
+      "versionId": "00000000-0000-4000-8000-000000000002",
+      "planId": "00000000-0000-4000-8000-000000000003",
+      "revision": 2,
+      "confirmed": true
+    }
+  },
+  {
+    "name": "example-8-Guest",
+    "schema": "Guest",
+    "value": {
+      "ownerId": "00000000-0000-4000-8000-000000000020",
+      "expiresAt": "2026-11-23T12:00:00Z"
+    }
+  },
+  {
+    "name": "example-9-SessionCreate",
+    "schema": "SessionCreate",
+    "value": {
+      "projectId": "00000000-0000-4000-8000-000000000001",
+      "versionId": "00000000-0000-4000-8000-000000000002",
+      "planId": "00000000-0000-4000-8000-000000000003",
+      "expectedRevision": 2
+    }
+  },
+  {
+    "name": "example-10-AnswerRequest",
+    "schema": "AnswerRequest",
+    "value": {
+      "questionId": "00000000-0000-4000-8000-000000000007",
+      "turnId": "00000000-0000-4000-8000-000000000009",
+      "expectedRevision": 3,
+      "text": "The total is quantity multiplied by the unit price."
+    }
+  },
+  {
+    "name": "example-11-ControlRequest",
+    "schema": "ControlRequest",
+    "value": {
+      "action": "pause",
+      "expectedRevision": 3
+    }
+  },
+  {
+    "name": "example-12-Operation",
+    "schema": "Operation",
+    "value": {
+      "resourceId": "00000000-0000-4000-8000-000000000006",
+      "revision": 4,
+      "jobId": "00000000-0000-4000-8000-000000000010",
+      "status": "accepted"
+    }
+  },
+  {
+    "name": "example-13-Operation",
+    "schema": "Operation",
+    "value": {
+      "resourceId": "00000000-0000-4000-8000-000000000006",
+      "revision": 5,
+      "jobId": null,
+      "status": "accepted"
+    }
+  },
+  {
+    "name": "example-14-Job",
+    "schema": "Job",
+    "value": {
+      "id": "00000000-0000-4000-8000-000000000010",
+      "kind": "generate_turn",
+      "status": "succeeded",
+      "attempts": 1,
+      "resultId": "00000000-0000-4000-8000-000000000006",
+      "errorCode": null,
+      "retryable": false
+    }
+  },
+  {
+    "name": "example-15-Session",
+    "schema": "Session",
+    "value": {
+      "id": "00000000-0000-4000-8000-000000000006",
+      "projectId": "00000000-0000-4000-8000-000000000001",
+      "versionId": "00000000-0000-4000-8000-000000000002",
+      "mode": "normal",
+      "status": "awaiting_answer",
+      "phase": "technical_depth",
+      "revision": 3,
+      "currentQuestion": {
+        "id": "00000000-0000-4000-8000-000000000007",
+        "topicId": "topic-3",
+        "text": "Walk me through how the total changes when ticket quantity changes.",
+        "kind": "opening",
+        "evidence": [
+          {
+            "id": "00000000-0000-4000-8000-000000000005",
+            "versionId": "00000000-0000-4000-8000-000000000002",
+            "fileId": "00000000-0000-4000-8000-000000000004",
+            "path": "src/price.ts",
+            "startLine": 1,
+            "endLine": 3,
+            "excerpt": "export function total(quantity: number, price: number) {\n  return quantity * price;\n}",
+            "sha256": "1452895a39650f8de6fb1b8a9ce2b9aa6b0080b234a5198a5e89bb5ac78f9438"
+          }
+        ],
+        "createdAt": "2026-10-24T12:00:00Z"
+      },
+      "turns": [
+        {
+          "id": "00000000-0000-4000-8000-000000000007",
+          "role": "interviewer",
+          "questionId": "00000000-0000-4000-8000-000000000007",
+          "text": "Walk me through how the total changes when ticket quantity changes.",
+          "createdAt": "2026-10-24T12:00:00Z"
+        }
+      ],
+      "activeSeconds": 65,
+      "budgetReached": false,
+      "reportId": null
+    }
+  },
+  {
+    "name": "example-16-InterviewerDecision",
+    "schema": "InterviewerDecision",
+    "value": {
+      "action": "follow_up",
+      "topicId": "topic-3",
+      "questionText": "Where is the displayed total recalculated after the quantity changes?",
+      "evidenceIds": [
+        "00000000-0000-4000-8000-000000000005"
+      ],
+      "claimUpdates": [
+        {
+          "answerId": "00000000-0000-4000-8000-000000000008",
+          "conceptId": "concept-3",
+          "quote": "The total is quantity multiplied by the unit price.",
+          "outcome": "supported",
+          "evidenceIds": [
+            "00000000-0000-4000-8000-000000000005"
+          ],
+          "explanation": "This matches the supplied arithmetic."
+        }
+      ],
+      "uncertainty": "UI code is not supplied.",
+      "transitionReason": "Probe integration after a correct explanation."
+    }
+  },
+  {
+    "name": "example-17-ReportContent",
+    "schema": "ReportContent",
+    "value": {
+      "partial": true,
+      "summary": "You explained the arithmetic; the other topics were not assessed.",
+      "criteria": [
+        {
+          "criterionId": "implementation",
+          "status": "demonstrated",
+          "rationale": "The answer correctly describes multiplication in the supplied function.",
+          "answerQuotes": [
+            {
+              "answerId": "00000000-0000-4000-8000-000000000008",
+              "quote": "The total is quantity multiplied by the unit price."
+            }
+          ],
+          "confidence": "high"
+        },
+        {
+          "criterionId": "design",
+          "status": "not_assessed",
+          "rationale": "This partial interview did not assess this criterion.",
+          "answerQuotes": [],
+          "confidence": "low"
+        },
+        {
+          "criterionId": "failure",
+          "status": "not_assessed",
+          "rationale": "This partial interview did not assess this criterion.",
+          "answerQuotes": [],
+          "confidence": "low"
+        },
+        {
+          "criterionId": "limits",
+          "status": "not_assessed",
+          "rationale": "This partial interview did not assess this criterion.",
+          "answerQuotes": [],
+          "confidence": "low"
+        }
+      ],
+      "findings": [
+        {
+          "id": "00000000-0000-4000-8000-000000000013",
+          "criterionId": "implementation",
+          "conceptId": "concept-3",
+          "outcome": "supported",
+          "title": "Correctly traced the calculation",
+          "rationale": "The explanation matches the supplied multiplication function.",
+          "answerQuotes": [
+            {
+              "answerId": "00000000-0000-4000-8000-000000000008",
+              "quote": "The total is quantity multiplied by the unit price."
+            }
+          ],
+          "evidenceIds": [
+            "00000000-0000-4000-8000-000000000005"
+          ],
+          "uncertainty": "The supplied snippet does not show UI state updates.",
+          "practiceTask": "Trace what a quantity change does in the UI before calling this function."
+        }
+      ],
+      "practiceTasks": [
+        "Trace a quantity change through the UI."
+      ],
+      "unassessedTopics": [
+        "design",
+        "failure",
+        "limits"
+      ]
+    }
+  },
+  {
+    "name": "example-18-Report",
+    "schema": "Report",
+    "value": {
+      "id": "00000000-0000-4000-8000-000000000012",
+      "sessionId": "00000000-0000-4000-8000-000000000006",
+      "revision": 1,
+      "rubricVersion": "v1",
+      "createdAt": "2026-10-24T12:00:00Z",
+      "content": {
+        "partial": true,
+        "summary": "You explained the arithmetic; the other topics were not assessed.",
+        "criteria": [
+          {
+            "criterionId": "implementation",
+            "status": "demonstrated",
+            "rationale": "The answer correctly describes multiplication in the supplied function.",
+            "answerQuotes": [
+              {
+                "answerId": "00000000-0000-4000-8000-000000000008",
+                "quote": "The total is quantity multiplied by the unit price."
+              }
+            ],
+            "confidence": "high"
+          },
+          {
+            "criterionId": "design",
+            "status": "not_assessed",
+            "rationale": "This partial interview did not assess this criterion.",
+            "answerQuotes": [],
+            "confidence": "low"
+          },
+          {
+            "criterionId": "failure",
+            "status": "not_assessed",
+            "rationale": "This partial interview did not assess this criterion.",
+            "answerQuotes": [],
+            "confidence": "low"
+          },
+          {
+            "criterionId": "limits",
+            "status": "not_assessed",
+            "rationale": "This partial interview did not assess this criterion.",
+            "answerQuotes": [],
+            "confidence": "low"
+          }
+        ],
+        "findings": [
+          {
+            "id": "00000000-0000-4000-8000-000000000013",
+            "criterionId": "implementation",
+            "conceptId": "concept-3",
+            "outcome": "supported",
+            "title": "Correctly traced the calculation",
+            "rationale": "The explanation matches the supplied multiplication function.",
+            "answerQuotes": [
+              {
+                "answerId": "00000000-0000-4000-8000-000000000008",
+                "quote": "The total is quantity multiplied by the unit price."
+              }
+            ],
+            "evidenceIds": [
+              "00000000-0000-4000-8000-000000000005"
+            ],
+            "uncertainty": "The supplied snippet does not show UI state updates.",
+            "practiceTask": "Trace what a quantity change does in the UI before calling this function."
+          }
+        ],
+        "practiceTasks": [
+          "Trace a quantity change through the UI."
+        ],
+        "unassessedTopics": [
+          "design",
+          "failure",
+          "limits"
+        ]
+      },
+      "evidence": [
+        {
+          "id": "00000000-0000-4000-8000-000000000005",
+          "versionId": "00000000-0000-4000-8000-000000000002",
+          "fileId": "00000000-0000-4000-8000-000000000004",
+          "path": "src/price.ts",
+          "startLine": 1,
+          "endLine": 3,
+          "excerpt": "export function total(quantity: number, price: number) {\n  return quantity * price;\n}",
+          "sha256": "1452895a39650f8de6fb1b8a9ce2b9aa6b0080b234a5198a5e89bb5ac78f9438"
+        }
+      ]
+    }
+  },
+  {
+    "name": "example-19-RetestRequest",
+    "schema": "RetestRequest",
+    "value": {
+      "reportId": "00000000-0000-4000-8000-000000000012",
+      "conceptIds": [
+        "concept-3"
+      ]
+    }
+  },
+  {
+    "name": "example-20-FeedbackRequest",
+    "schema": "FeedbackRequest",
+    "value": {
+      "findingId": "00000000-0000-4000-8000-000000000013",
+      "note": "The UI is in a file I did not upload."
+    }
+  },
+  {
+    "name": "example-21-FeedbackReceipt",
+    "schema": "FeedbackReceipt",
+    "value": {
+      "id": "00000000-0000-4000-8000-000000000014",
+      "status": "recorded"
+    }
+  },
+  {
+    "name": "example-22-Deletion",
+    "schema": "Deletion",
+    "value": {
+      "receiptId": "00000000-0000-4000-8000-000000000015",
+      "status": "accepted"
+    }
+  },
+  {
+    "name": "example-23-Error",
+    "schema": "Error",
+    "value": {
+      "error": {
+        "code": "STALE_REVISION",
+        "message": "Reload the current session before submitting.",
+        "requestId": "00000000-0000-4000-8000-000000000016",
+        "retryable": false,
+        "currentRevision": 4
+      }
+    }
+  },
+  {
+    "name": "example-24-Health",
+    "schema": "Health",
+    "value": {
+      "status": "ok"
+    }
+  },
+  {
+    "name": "example-25-ConsentRequest",
+    "schema": "ConsentRequest",
+    "value": {
+      "consent": true
+    }
+  }
+]
+
