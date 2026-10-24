@@ -130,7 +130,13 @@ export async function structured<T>(
       false,
     );
   const call = await reserve(job, provider, model);
-  const localUrl = provider==='ollama'?new URL('/api/chat',process.env.MODEL_BASE_URL||'http://127.0.0.1:11434').toString():'';
+  const localUrl =
+    provider === "ollama"
+      ? new URL(
+          "/api/chat",
+          process.env.MODEL_BASE_URL || "http://127.0.0.1:11434",
+        ).toString()
+      : "";
   const maxTokens = name === "PreparedPlan" ? 2200 : 1600;
   const payload =
     provider === "groq"

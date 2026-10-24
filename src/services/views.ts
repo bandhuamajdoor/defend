@@ -19,7 +19,7 @@ import type {
 } from "../domain/types";
 import { budgetReached, elapsed } from "../domain/controller";
 export const evidenceDTO = (
-  e: DbEvidence & { file: SourceFile },
+  e: DbEvidence & { file: Pick<SourceFile, "path"> },
 ): Evidence => ({
   id: e.id,
   versionId: e.versionId,
@@ -32,7 +32,10 @@ export const evidenceDTO = (
 });
 export function projectDTO(
   p: Project & {
-    versions: (Version & { files: SourceFile[]; plans: Plan[] })[];
+    versions: (Version & {
+      files: Pick<SourceFile, "id" | "path" | "byteSize" | "lineCount">[];
+      plans: Plan[];
+    })[];
   },
 ): ProjectDTO {
   return {

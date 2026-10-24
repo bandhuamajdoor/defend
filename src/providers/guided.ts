@@ -34,11 +34,22 @@ export function guidedCoach(
     /^(?:i (?:do(?:n'?t| not) know|have no idea)|idk|no idea|dunno|whatever|asdf|blah|not sure)[.!\s]*$/i.test(
       text.trim(),
     );
-  const relevant = evidence.filter((e) =>
-    sample
-      ? /TicketSelector|pricing|ownership|booking/.test(e.path)
-      : topic.evidenceIds.includes(e.id),
-  );
+  const priority =
+    topic.phase === "reflection" || topic.conceptId === "context-limits"
+      ? ["src/booking.ts", "src/ownership.ts", "README.md"]
+      : topic.phase === "introduction" || topic.conceptId === "project-purpose"
+        ? ["README.md", "src/TicketSelector.tsx", "src/pricing.ts"]
+        : ["src/TicketSelector.tsx", "src/pricing.ts", "src/ownership.ts"];
+  const relevant = evidence
+    .filter((e) =>
+      sample ? priority.includes(e.path) : topic.evidenceIds.includes(e.id),
+    )
+    .sort((a, b) =>
+      sample
+        ? priority.indexOf(a.path) - priority.indexOf(b.path) ||
+          a.startLine - b.startLine
+        : 0,
+    );
   let nextQuestion = topic.openingQuestion,
     exampleAnswer: string | null = null;
   let summary = "Let’s make that explanation more concrete.";
@@ -232,6 +243,10 @@ export function guidedCoach(
     summary =
       "It’s okay not to know yet. Let’s build the answer from one observable step in the source.";
   }
+  if (verdict === "strong" && !improvements.length)
+    improvements.push(
+      "Make the opening even tighter with one concrete user action, while keeping your own contribution precise.",
+    );
   const response = {
     verdict,
     summary,
@@ -296,7 +311,7 @@ export function coachingReport(state: State, plan: PlanContent): ReportContent {
   const latest = Array.from(
     new Map(feedback.map((f) => [f.topicId, f])).values(),
   ).slice(0, 8);
-  const findings = latest.map((f) => {
+  const findings: ReportContent["findings"] = latest.map((f) => {
     const answer = state.answers.find((a) => a.id === f.answerId)!;
     const first = state.answers.find((a) => a.topicId === answer.topicId)!;
     return {
@@ -324,16 +339,37 @@ export function coachingReport(state: State, plan: PlanContent): ReportContent {
         "Explain this concept again using a different concrete example.",
     };
   });
+  const uncoached = state.answers.filter(
+    (a) => !feedback.some((f) => f.answerId === a.id),
+  );
+  for (const answer of uncoached.slice(0, 8 - findings.length)) {
+    const topic = plan.topics.find((t) => t.id === answer.topicId)!;
+    findings.push({
+      id: randomUUID(),
+      criterionId: criterionFor(topic.phase),
+      conceptId: topic.conceptId,
+      outcome: "unresolved",
+      title: "Saved answer awaiting coaching",
+      rationale:
+        "This answer was accepted, but coaching did not finish before you ended the session. No correctness judgment was made.",
+      answerQuotes: [
+        { answerId: answer.id, quote: answer.text.slice(0, 2000) },
+      ],
+      evidenceIds: [],
+      uncertainty: "No model or guided checklist evaluated this answer.",
+      practiceTask: `Return to this objective and trace one concrete example: ${topic.objective}`,
+    });
+  }
   return validate<ReportContent>("ReportContent", {
     partial: plan.topics.some(
       (t) => !state.answers.some((a) => a.topicId === t.id),
     ),
-    summary: `You practised ${latest.length} topics with ${state.answers.length} saved answers. ${feedback.some((f) => f.source === "guided_sample") ? "This report summarizes a guided checklist for the known Campus Tickets sample." : "Review the specific reasoning and source references below."} Focus on one concrete explanation, then retest it with a new scenario.`,
+    summary: `You practised ${latest.length} topics with ${state.answers.length} saved answers. ${uncoached.length ? `${uncoached.length} saved answer(s) did not receive coaching and remain unassessed. ` : ""}${feedback.some((f) => f.source === "guided_sample") ? "This report summarizes a guided checklist for the known Campus Tickets sample." : "Review the specific reasoning and source references below."} Focus on one concrete explanation, then retest it with a new scenario.`,
     criteria,
     findings,
     practiceTasks: [
-      ...findings.filter((_, i) => latest[i].verdict !== "strong"),
-      ...findings.filter((_, i) => latest[i].verdict === "strong"),
+      ...findings.filter((_, i) => latest[i]?.verdict !== "strong"),
+      ...findings.filter((_, i) => latest[i]?.verdict === "strong"),
     ]
       .slice(0, 3)
       .map((f) => f.practiceTask),

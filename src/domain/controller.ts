@@ -151,6 +151,7 @@ export function control(
       409,
     );
     freeze(s, now);
+    s.skipPendingCoaching = true;
     return "evaluating";
   }
   if (action === "pause") {

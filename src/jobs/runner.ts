@@ -76,7 +76,9 @@ export async function runJob(
                 expiresAt: { gt: new Date() },
               },
             },
-            include: { evidence: { include: { file: true } } },
+            include: {
+              evidence: { include: { file: { select: { path: true } } } },
+            },
           })
         : null;
     const session =
@@ -91,7 +93,11 @@ export async function runJob(
             },
             include: {
               plan: true,
-              version: { include: { evidence: { include: { file: true } } } },
+              version: {
+                include: {
+                  evidence: { include: { file: { select: { path: true } } } },
+                },
+              },
             },
           })
         : null;
@@ -134,7 +140,11 @@ export async function runJob(
       preparedModelId = prepared.modelId;
       preparedMap = prepared.fileMap;
     } else {
-      if (state.coachMode && state.pendingAnswerId) {
+      if (
+        state.coachMode &&
+        state.pendingAnswerId &&
+        !state.skipPendingCoaching
+      ) {
         feedback = await coachAnswer(
           job,
           state,

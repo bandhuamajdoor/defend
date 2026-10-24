@@ -153,7 +153,9 @@ async function getProject(tx: Tx, ownerId: string, id: string) {
       versions: {
         orderBy: { ordinal: "desc" },
         include: {
-          files: true,
+          files: {
+            select: { id: true, path: true, byteSize: true, lineCount: true },
+          },
           plans: {
             where: { mode: "normal" },
             orderBy: { revision: "desc" },
@@ -697,7 +699,7 @@ async function read(ownerId: string, path: string[], req: Request) {
       );
       const evidence = await db.evidence.findMany({
         where: { id: { in: ids }, versionId: s.versionId },
-        include: { file: true },
+        include: { file: { select: { path: true } } },
       });
       requireThat(
         evidence.length === ids.length,
@@ -732,7 +734,7 @@ async function read(ownerId: string, path: string[], req: Request) {
     requireThat(r, "INVALID_STATE", "The report is not ready to export.", 409);
     const evidence = await db.evidence.findMany({
       where: { versionId: s.versionId },
-      include: { file: true },
+      include: { file: { select: { path: true } } },
     });
     const dto = reportDTO(r, evidence.map(evidenceDTO));
     if (action === "report") return NextResponse.json(dto);

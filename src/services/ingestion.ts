@@ -37,7 +37,7 @@ export function ingest(input: Upload) {
     names.add(path.toLowerCase());
     const text = f.text.replace(/\r\n?/g, "\n");
     requireThat(
-      !text.includes("\0") && !text.includes("\ufffd"),
+      text.isWellFormed() && !text.includes("\0") && !text.includes("\ufffd"),
       "UNSUPPORTED_FILE",
       `Unsupported text encoding: ${path}. Use UTF-8 text.`,
     );

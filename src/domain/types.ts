@@ -25,7 +25,7 @@ export interface Upload {
   contribution: string;
   consent: true;
   files: SourceInput[];
-  consentVersion?:string;
+  consentVersion?: string;
 }
 export interface Evidence {
   id: string;
@@ -50,7 +50,13 @@ export interface PlanContent {
   contribution: string;
   uncertainties: string[];
   topics: Topic[];
-  coverage?:{indexedFiles:number;indexedExcerpts:number;reviewedExcerpts:number;strategy:string;notes:string[]};
+  coverage?: {
+    indexedFiles: number;
+    indexedExcerpts: number;
+    reviewedExcerpts: number;
+    strategy: string;
+    notes: string[];
+  };
 }
 export interface Question {
   id: string;
@@ -92,6 +98,7 @@ export interface State {
   reportId: string | null;
   coachMode?: boolean;
   pendingAnswerId?: string | null;
+  skipPendingCoaching?: boolean;
   coaching?: Coaching[];
 }
 export interface PublicSession {

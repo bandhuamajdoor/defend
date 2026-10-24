@@ -539,5 +539,66 @@ describe.sequential(
         reviewedExcerpts: 0,
       });
     });
+    it("can end during unavailable coaching without another model call", async () => {
+      const guest = await new Guest().init();
+      const created = await guest.call("/projects/sample", "POST", {
+        consent: true,
+      });
+      await drain();
+      const p = (await guest.call(`/projects/${created.data.resourceId}`))
+        .data as ProjectDTO;
+      const version = p.versions[0],
+        plan = version.plan!;
+      const confirmed = await guest.call(`/projects/${p.id}/confirm`, "POST", {
+        versionId: version.id,
+        expectedRevision: plan.revision,
+        summary: plan.content.summary,
+        contribution: plan.content.contribution,
+      });
+      const started = await guest.call("/sessions", "POST", {
+        projectId: p.id,
+        versionId: version.id,
+        planId: confirmed.data.planId,
+        expectedRevision: confirmed.data.revision,
+      });
+      await drain();
+      let s = (await guest.call(`/sessions/${started.data.resourceId}`))
+        .data as PublicSession;
+      // Freeze provenance to a provider that cannot be called in this test.
+      await db.plan.update({
+        where: { id: confirmed.data.planId },
+        data: { modelId: "groq:unavailable" },
+      });
+      const accepted = await guest.call(`/sessions/${s.id}/answers`, "POST", {
+        questionId: s.currentQuestion!.id,
+        turnId: randomUUID(),
+        expectedRevision: s.revision,
+        text: "Keep this accepted answer in the partial report.",
+      });
+      expect(accepted.status).toBe(202);
+      s = (await guest.call(`/sessions/${s.id}`)).data;
+      const ended = await guest.call(`/sessions/${s.id}/controls`, "POST", {
+        action: "end",
+        expectedRevision: s.revision,
+      });
+      expect(ended.status).toBe(202);
+      const transport = vi.fn(async () => {
+        throw new Error("No model call is allowed");
+      });
+      vi.stubGlobal("fetch", transport);
+      await drain();
+      const report = (await guest.call(`/sessions/${s.id}/report`))
+        .data as ReportDTO;
+      expect(report.content.findings[0].title).toBe(
+        "Saved answer awaiting coaching",
+      );
+      expect(report.content.findings[0].answerQuotes[0].quote).toContain(
+        "Keep this accepted answer",
+      );
+      expect(
+        report.content.criteria.every((c) => c.status === "not_assessed"),
+      ).toBe(true);
+      expect(transport).not.toHaveBeenCalled();
+    });
   },
 );

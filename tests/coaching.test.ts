@@ -4,6 +4,7 @@ import {
   initialState,
   accept,
   applyCoaching,
+  control,
   publish,
 } from "../src/domain/controller";
 import { guidedCoach, coachingReport } from "../src/providers/guided";
@@ -69,6 +70,15 @@ describe("immediate, bounded coaching", () => {
     const f = guidedCoach(state, plan, evidence, true);
     expect(f.verdict).toBe("needs_work");
     expect(f.summary).toContain("does not update");
+    expect(
+      evidence
+        .filter((e) => f.evidenceIds.includes(e.id))
+        .some(
+          (e) =>
+            e.path === "src/TicketSelector.tsx" &&
+            e.excerpt.includes("[total]"),
+        ),
+    ).toBe(true);
     expect(f.improvements.join(" ")).toContain("runs on mount");
   });
   it("recognizes concise correct reasoning and still offers precision", () => {
@@ -145,6 +155,25 @@ describe("immediate, bounded coaching", () => {
       ),
     ).toBe(false);
   });
+  it("ends without requiring unfinished coaching and preserves the unassessed answer", () => {
+    const state = answer(
+      1,
+      "My saved answer while the provider is unavailable.",
+    );
+    expect(
+      control(state, "generation_failed", "end", plan, "normal", 3000),
+    ).toBe("evaluating");
+    expect(state.skipPendingCoaching).toBe(true);
+    const report = coachingReport(state, plan);
+    expect(report.findings[0].title).toBe("Saved answer awaiting coaching");
+    expect(report.findings[0].answerQuotes[0].quote).toBe(
+      state.answers[0].text,
+    );
+    expect(report.criteria.every((c) => c.status === "not_assessed")).toBe(
+      true,
+    );
+    verifyReport(report, state, evidence);
+  });
 });
 describe("project-scale retrieval", () => {
   it("finds a relevant source beyond the former first-20-file limit", () => {
@@ -211,6 +240,11 @@ describe("project-scale retrieval", () => {
       text: "",
     }));
     expect(() => ingest({ ...sample, files })).toThrow(/500/);
+  });
+  it("rejects malformed Unicode before source storage or model use", () => {
+    expect(() =>
+      ingest({ ...sample, files: [{ path: "bad.ts", text: "\ud800" }] }),
+    ).toThrow();
   });
 });
 describe("model contract boundaries", () => {
