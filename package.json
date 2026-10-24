@@ -13,6 +13,7 @@
     "worker:dev": "tsx --env-file-if-exists=.env.local src/worker.ts",
     "worker": "node --env-file-if-exists=.env.local dist/worker.js",
     "db:local": "node --env-file-if-exists=.env.local scripts/local-db.mjs",
+    "db:utf8": "node --env-file-if-exists=.env.local scripts/migrate-local-utf8.mjs",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx --env-file-if-exists=.env.local prisma/seed.ts",
