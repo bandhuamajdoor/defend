@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Badge, Icon } from "@/components/ui";
+import { ThemeSwitch } from "./theme";
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -130,6 +131,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <strong>{title}</strong>
           </div>
           <div className="topbar-right">
+            <ThemeSwitch />
             <Badge tone="green">Development preview</Badge>
             <span className="topbar-divider" />
             <span className="tiny-avatar">Y</span>
@@ -139,7 +141,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
           id="main"
           className={`main ${pathname.startsWith("/sessions") && !pathname.includes("/report") ? "interview-main" : ""}`}
         >
-          {children}
+          <div key={pathname} className="page-transition">
+            {children}
+          </div>
         </main>
         <footer className="footer">
           <span>Made for the work you put in.</span>

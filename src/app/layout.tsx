@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
+import { ThemeProvider, type Theme } from "@/components/theme";
 import "./globals.css";
+import "./experience.css";
 export const metadata: Metadata = {
   title: "Defend — Know your work. Own your story.",
   description:
@@ -12,9 +14,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   await headers();
+  const saved = (await cookies()).get("defend_theme")?.value;
+  const theme: Theme = saved === "dark" || saved === "light" ? saved : "system";
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" data-theme={theme}>
+      <body>
+        <ThemeProvider initial={theme}>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }
