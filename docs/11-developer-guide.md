@@ -1,56 +1,52 @@
 # Developer guide
-## Current repository
-Only specifications and documentation validation exist. The commands below are the package-script contract to implement in B01, not working setup instructions today. Existing command: node scripts/check-docs.mjs.
 
-## Planned stack and layout
-TypeScript; Next.js App Router; PostgreSQL; Prisma; independent Node worker. Node 24 LTS working baseline. Browser SpeechSynthesis behind an interface. Structured model adapter selected after day-one evaluation.
-```text
-src/app/                 routes, screens and API transport
-src/components/          UI and evidence/report components
-src/domain/              pure state, budgets, rubric and DTOs
-src/services/            ingestion, preparation, interview, reporting
-src/providers/           mock and chosen model; optional speech provider
-src/db/                  Prisma client and owner-scoped repositories
-src/jobs/                claim, lease, retry and handlers
-src/worker.ts            long-running worker entry
-prisma/                  schema, migrations and sample seed
-tests/                   domain, API, DB and browser tests
-evals/                   fixtures, runners and human review records
-docs/                    specifications/contracts/prompts
-```
+## Current implementation
+Next.js 16.4.3, React 19, strict TypeScript, PostgreSQL and Prisma 7.10.1, with an independent Node worker. Dependencies and lockfile are pinned. Native verification uses Node 22.20.0 on Windows; CI/container configuration uses Node 24.22.1. See [implementation status](16-implementation-status.md) for the scope and remaining release gates.
 
-## Environment
-Copy [.env.example](../.env.example) into a gitignored .env.local after scaffolding. Web and worker must load the same validated configuration explicitly; a Node worker does not automatically inherit Next's env-file behaviour.
-Required local: DATABASE_URL, APP_ORIGIN, APP_SECRET, MODEL_PROVIDER=mock. Provider key/model/token-price config plus positive spend ceilings required in paid mode. Never put secrets in NEXT_PUBLIC variables.
+## Setup and commands
+Follow the [README](../README.md). npm ci uses the checked-in .npmrc to avoid an observed npm 11.3 optional-peer resolver crash. npm run setup generates .env.local with a random secret and preserves existing configuration. Next loads it automatically; worker/integration/evaluation scripts load it explicitly. Host environment values take precedence.
 
-## Planned commands
-| Command | Required behaviour |
+Use npm run db:local for a persistent local PostgreSQL cluster under .data/postgres, or configure DATABASE_URL. Keep DB running, apply npm run db:deploy, then npx prisma generate. db:migrate creates reviewed development migrations; never reset production. db:seed validates the fixture without resetting user data; guest copies are created on demand.
+
+| Command | Behaviour |
 | --- | --- |
-| npm ci | Reproducible dependency install from committed lockfile |
-| npm run dev | Next development web server |
-| npm run worker:dev | Worker with explicit local env loading |
-| npm run db:migrate | Development migration workflow |
-| npm run db:deploy | Apply checked-in production migrations |
-| npm run db:seed | Idempotent sample seed only; no user-data reset |
-| npm run build | Type-safe web and worker production builds |
-| npm run start | Production web |
-| npm run worker | Compiled production worker |
+| npm run setup | Create local env and random secret if missing |
+| npm run db:local | Persistent native development PostgreSQL |
+| npm run db:utf8 | Preserve a legacy local database while converting its application data to UTF-8; stop web/worker first |
+| npm run db:migrate / db:deploy | Development migrations / apply checked-in migrations |
+| npm run db:seed | Validate original sample fixture |
+| npm run dev / worker:dev | Web and separate development worker |
+| npm run build | Generate Prisma, type-check/build web, bundle production worker |
+| npm run start / worker | Production web / compiled worker |
 | npm run lint / typecheck / test | Static checks and domain tests |
-| npm run test:integration / test:e2e | Real DB invariants and browser tests |
-| npm run eval | Mock or explicitly enabled real-model evaluation |
-| npm run docs:check | Run documentation/contract validator |
+| npm run test:integration | Real PostgreSQL invariants; stop normal worker first |
+| npm run test:e2e | Browser sample/upload, recovery, controls, report/export/retest/deletion |
+| npm run eval | Mechanical mock checks; no semantic-quality claims |
+| npm run docs:check | Local links, examples, contract structure and references |
 
-Scaffold must supply Docker Compose for local PostgreSQL and the two processes, while allowing native Node web/worker development on Windows. Do not require Bash-only scripts. Port and DB values in examples are local defaults, not credentials.
+Open http://localhost:3000 to match APP_ORIGIN. Health checks DB access and a worker heartbeat newer than 60 seconds. Browser checks require npx playwright install chromium and running web + worker. Generated artifacts are under output/. Successful smoke runs delete their workspace; failed runs may leave test guests until expiry. Never run tests against production.
 
-## Coding rules
-Validate inputs at the boundary and model output before state mutation. Domain functions have no provider SDK or browser audio imports. Use typed enums consistent with contracts. Never hide failure with fixture output. Store canonical results before rendering.
-Queries require owner context. Source/report HTML must be escaped. Use transactions for state+job writes. Unit tests target behaviour; integration tests own concurrency guarantees.
-Keep prompt templates versioned. Evidence references are stable IDs; avoid regenerated line numbers from model summaries.
+## Windows Unicode repair
 
-## Development order
-First build the vertical slice in mock mode: sample -> prepare -> confirm -> first answer -> report. Then prove persistence/races, then connect one real provider, then finish UX/retest/deletion. Include actual model behaviour before visual polish.
-Changing a contract requires schema, OpenAPI, examples, validators, API DTOs, tests and affected prose in one change. Product runtime DTOs should be generated from or tested against the JSON schema.
+Database encoding must be UTF8. Without explicit encoding, a Windows locale can create WIN1252; uploads containing README tree characters, non-Latin text or emoji then fail before preparation. The local launcher now supplies UTF8/C for initdb and creates databases from template0 with UTF8/C. Readiness and project ingestion reject a non-UTF8 database with repair guidance.
 
-## Git / delivery
-Inspect git state before changes. Use codex/ prefix for a new branch unless user specifies otherwise. Do not commit credentials or actual classmate data. PR description should name the user-visible behaviour, validation and remaining limits. No deployment/paid account creation is implied by this guide.
+For a database created by the old launcher, keep PostgreSQL running but stop web/worker and all other app DB connections. Run `npm run db:utf8`, then restart web/worker. The local-only helper refuses unknown schemas or active connections, blocks new source connections, snapshots all application rows and migration history under .data/backups/, deploys the target schema, imports typed rows in dependency order, and verifies row-content fingerprints before cutover. UUIDs, timestamps, JSON, arrays, owner credentials and saved answers are preserved. It keeps the configured database name and never rewrites .env.local.
 
+The original database is retained under a generated _legacy_ name with connections disabled. The snapshot receipt records that name and verified row counts. Failures before cutover restore access to the original database. Staging/legacy databases and manual snapshots are not automatically deleted; active workspace deletion does not remove these rollback copies. Keep them private and remove them through local administration after verification when no longer needed. This is an application-specific local repair, not the hosted backup/restore release gate or a general PostgreSQL migration tool. See the [PostgreSQL database-creation documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html) for encoding/template constraints.
+
+## Layout and rules
+- src/app: entry points, HTTP transport and styles.
+- src/components/screens: separate screens; shared hooks/controls in src/components.
+- src/domain: pure controller, types and runtime contract validation.
+- src/services: API orchestration, ingestion, evidence and exports.
+- src/providers: guided sample/structure coaching, free/local structured transports and orchestration. See [free AI setup](17-free-ai-setup.md).
+- src/jobs, src/db and src/worker.ts: persistence, queue, worker and maintenance.
+- prisma: schema/migrations; tests: domain and real DB integration.
+- evals: ground truth and mechanical fixtures; scripts/browser-smoke.mjs: browser acceptance checks.
+
+Owner context is required in queries; foreign IDs return 404. Answer, state, event and job writes are atomic. Owner-scoped PostgreSQL advisory locks serialize mutations and publication. No provider work runs inside transactions. Uncertain retries use the same idempotency key. Browser drafts clear only after server acceptance. Source/report HTML is escaped.
+
+Runtime validation reads the committed JSON schema; integration tests validate public DTOs against it. Update schema, OpenAPI, examples, tests and prose together. Record refinements in [decisions](15-decisions-and-risks.md).
+
+## Git workflow
+The original specification is on main; implementation is on codex/product-mvp. Make focused commits when a coherent change is ready and push regularly. Never add .env.local, .data, actual user projects, credentials or generated test output. Draft PRs should explain actual behaviour, validation and remaining limitations.

@@ -2,49 +2,105 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://defend.invalid/contracts/domain.schema.json",
   "title": "Defend v0.1 domain and transport schemas",
-  "description": "Planned contract; semantic invariants are specified in the accompanying documents.",
+  "description": "Defend runtime contract. See the implementation status document for release limitations.",
   "$defs": {
     "RetestPlan": {
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "summary": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 4000
-    },
-    "contribution": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 2000
-    },
-    "uncertainties": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 0,
-        "maxLength": 500
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "contribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "uncertainties": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 500
+          },
+          "maxItems": 20,
+          "minItems": 0
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Topic"
+          },
+          "maxItems": 2,
+          "minItems": 2
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "indexedFiles": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "indexedExcerpts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "reviewedExcerpts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "strategy": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "notes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "minItems": 0,
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "indexedFiles",
+            "indexedExcerpts",
+            "reviewedExcerpts",
+            "strategy",
+            "notes"
+          ]
+        }
       },
-      "maxItems": 20,
-      "minItems": 0
+      "required": [
+        "summary",
+        "contribution",
+        "uncertainties",
+        "topics"
+      ]
     },
-    "topics": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/Topic"
+    "ConsentRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "consent": {
+          "type": "boolean",
+          "const": true
+        },
+        "consentVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
       },
-      "maxItems": 2,
-      "minItems": 2
-    }
-  },
-  "required": [
-    "summary",
-    "contribution",
-    "uncertainties",
-    "topics"
-  ]
-},
-    "ConsentRequest": {"type":"object","additionalProperties":false,"properties":{"consent":{"type":"boolean","const":true}},"required":["consent"]},
+      "required": [
+        "consent"
+      ]
+    },
     "UUID": {
       "type": "string",
       "format": "uuid"
@@ -144,7 +200,7 @@
         "text": {
           "type": "string",
           "minLength": 0,
-          "maxLength": 120000
+          "maxLength": 262144
         }
       },
       "required": [
@@ -180,8 +236,13 @@
           "items": {
             "$ref": "#/$defs/SourceInput"
           },
-          "maxItems": 20,
+          "maxItems": 500,
           "minItems": 1
+        },
+        "consentVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         }
       },
       "required": [
@@ -269,6 +330,45 @@
           },
           "maxItems": 5,
           "minItems": 5
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "indexedFiles": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "indexedExcerpts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "reviewedExcerpts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "strategy": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "notes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "minItems": 0,
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "indexedFiles",
+            "indexedExcerpts",
+            "reviewedExcerpts",
+            "strategy",
+            "notes"
+          ]
         }
       },
       "required": [
@@ -355,7 +455,7 @@
               "lineCount"
             ]
           },
-          "maxItems": 20,
+          "maxItems": 500,
           "minItems": 1
         },
         "plan": {
@@ -847,6 +947,55 @@
             {
               "type": "null"
             }
+          ]
+        },
+        "jobId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coaching": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Coaching"
+          },
+          "minItems": 0,
+          "maxItems": 12
+        },
+        "engine": {
+          "type": "string",
+          "enum": [
+            "guided_sample",
+            "structure_only",
+            "groq",
+            "ollama",
+            "legacy_mock"
+          ]
+        },
+        "topicProgress": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "current": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            }
+          },
+          "required": [
+            "current",
+            "total"
           ]
         }
       },
@@ -1427,7 +1576,354 @@
       "required": [
         "status"
       ]
+    },
+    "ProjectSessionSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "status": {
+          "$ref": "#/$defs/SessionStatus"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "normal",
+            "retest"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "mode",
+        "createdAt"
+      ]
+    },
+    "ProjectSessionList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sessions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectSessionSummary"
+          },
+          "minItems": 0,
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "sessions"
+      ]
+    },
+    "CoachResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "needs_work",
+            "promising",
+            "strong",
+            "uncertain"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 800
+          },
+          "maxItems": 3,
+          "minItems": 0
+        },
+        "improvements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 800
+          },
+          "maxItems": 3,
+          "minItems": 0
+        },
+        "exampleAnswer": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recommendation": {
+          "type": "string",
+          "enum": [
+            "retry",
+            "advance"
+          ]
+        },
+        "nextQuestion": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        }
+      },
+      "required": [
+        "verdict",
+        "summary",
+        "strengths",
+        "improvements",
+        "exampleAnswer",
+        "recommendation",
+        "nextQuestion",
+        "evidenceIds"
+      ]
+    },
+    "Coaching": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "needs_work",
+            "promising",
+            "strong",
+            "uncertain"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 800
+          },
+          "maxItems": 3,
+          "minItems": 0
+        },
+        "improvements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 800
+          },
+          "maxItems": 3,
+          "minItems": 0
+        },
+        "exampleAnswer": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recommendation": {
+          "type": "string",
+          "enum": [
+            "retry",
+            "advance"
+          ]
+        },
+        "nextQuestion": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          },
+          "maxItems": 12,
+          "minItems": 0
+        },
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "answerId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "questionId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "topicId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "criterionId": {
+          "$ref": "#/$defs/CriterionId"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "guided_sample",
+            "structure_only",
+            "groq",
+            "ollama"
+          ]
+        }
+      },
+      "required": [
+        "verdict",
+        "summary",
+        "strengths",
+        "improvements",
+        "exampleAnswer",
+        "recommendation",
+        "nextQuestion",
+        "evidenceIds",
+        "id",
+        "answerId",
+        "questionId",
+        "topicId",
+        "criterionId",
+        "source"
+      ]
+    },
+    "EvidenceList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 0,
+          "maxItems": 12
+        }
+      },
+      "required": [
+        "evidence"
+      ]
+    },
+    "Capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "groq",
+            "ollama"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "guided",
+            "live"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "consentVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "dataDisclosure": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "uploadLimits": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "fileBytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "totalBytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "totalCharacters": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "requestBytes": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "files",
+            "fileBytes",
+            "totalBytes",
+            "totalCharacters",
+            "requestBytes"
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "mode",
+        "label",
+        "model",
+        "consentVersion",
+        "dataDisclosure",
+        "ready",
+        "uploadLimits"
+      ]
     }
   }
 }
-

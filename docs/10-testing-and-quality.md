@@ -2,7 +2,13 @@
 ## Strategy
 Test meaningful failure boundaries. Pure domain tests cover transitions and invariants; integration tests use real PostgreSQL transactions; browser tests exercise user journeys; AI evaluations check evidence and conversation usefulness. Mock-only success cannot establish product quality.
 
-Planned tools: Vitest for domain/API tests, Playwright for browser tests, a small scripted real-provider evaluation runner. Pin versions during scaffold. Do not treat these commands as available until ticket B01 implements them.
+Implemented tools: pinned Vitest for domain/API tests and Playwright for browser checks. Commands now work as described in the developer guide. The evaluation runner performs mechanical mock checks only; real-provider semantic evaluation remains a release gate. See [actual local evidence](16-implementation-status.md).
+
+Coaching tests cover intentionally bad, confidently wrong and concise correct sample answers, assisted revisions, bounded follow-ups, missing context and ending during unavailable coaching. Retrieval tests cover 500 files, relative imports and no code execution. Real PostgreSQL tests stub Groq/Ollama transport to verify schema, quotas and no fallback; they establish adapter mechanics, not external model quality. Browser speech recognition is simulated to check text handoff and review-before-send; actual microphone/audio QA remains manual.
+
+Upload regression tests include C/C++ sources/headers/templates/Makefiles/configuration, 622 bundled headers, root/nested ignore precedence, anchoring, escaped patterns, negation, ignored parents, unreadable rules and safeguards that Git negation cannot bypass. Browser checks cover ignore exceptions, C++ preparation, re-selection after changing .gitignore and explicit acknowledgement of documentation-only context.
+
+Unicode regression tests prepare README tree glyphs, Hindi, Chinese and emoji without changing the source. A real WIN1252 database fixture verifies the local repair preserves existing IDs/rows and Latin text, changes the active database to UTF8 and leaves the original disabled as a rollback copy. Unexpected upload-error tests check useful upload-specific copy and correlation logs without raw source/database errors. An exact local 14-file C++ folder also completed live Groq preparation after the database repair; this establishes preparation plumbing for that input, not general coaching quality.
 
 ## Requirement traceability
 | Test ID | Requirements | Scenario and pass condition |

@@ -34,6 +34,10 @@ Time accrues from awaiting_answer entry to submission/control; model generation,
 A skipped final question may finish immediately. Unvisited topics become not_assessed.
 
 ## Turn-generation contract
+New sessions use conversational coaching. Acceptance persists the answer and pendingAnswerId before generation. CoachResponse contains verdict, summary, strengths, improvements, exampleAnswer, retry/advance recommendation, nextQuestion and evidenceIds. Validated coaching is appended once per answer under the same lease/revision publication fence as the next question. Retry keeps the topic; after three attempts or two follow-ups the controller advances. Good answers still receive refinements. Older stored sessions retain the legacy question contract below.
+
+End cancels generation and sets skipPendingCoaching. The report can finish using already saved feedback during a provider outage; the pending saved answer is quoted as unassessed. Pause/resume preserves that pending answer so it can still receive coaching. A budget-triggered finish normally coaches the final answer before summarizing.
+
 [InterviewerDecision](contracts/domain.schema.json) contains action ask/follow_up/advance_topic/finish, topicId, questionText, evidenceIds, claimUpdates, uncertainty and transitionReason.
 Only the server assigns question IDs, ordinal, timestamps or state. Reject unknown topics, foreign evidence, backward transitions, exhausted follow-ups and invalid actions. finish requires adequate plan coverage, budget exhaustion or explicit user end; otherwise use next planned topic.
 At most one short acknowledgment and one substantive question, normally <=70 words. Do not reveal the answer in the question. Compound-task validation requires semantic tests; punctuation alone is not enough.
@@ -44,7 +48,7 @@ If the student corrects an earlier statement, keep both statements and mark the 
 
 ## Clarification, repeats and interruption
 Repeat returns the exact stored string locally. Clarify creates a new question linked to the prior one, same learning objective, with hint event. The previous question is marked replaced, not unanswerable or wrong. The explicit Repeat control guarantees verbatim replay. A typed request for clarification may be stored as an accepted answer, but is unassessed by the evaluator; the next generated clarification keeps the same objective and consumes the normal follow-up budget.
-External dictation has no audio events. Stop-speech is local; automatic interruption detection is not claimed.
+External dictation has no audio events. Optional browser recognition starts only on the microphone button; it appends text to the canonical composer. Sending is disabled while listening so final recognition events cannot affect the next turn. Stop and review before sending. Stop-speech is local; automatic interruption detection is not claimed.
 During pause/end racing a worker completion, revision/lease checks ensure only one valid state wins.
 
 ## Recovery

@@ -1,0 +1,53 @@
+name: Verify Defend
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.4-bookworm
+        env:
+          POSTGRES_USER: defend
+          POSTGRES_PASSWORD: local-development-only
+          POSTGRES_DB: defend
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U defend -d defend" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://defend:local-development-only@localhost:5432/defend
+      APP_ORIGIN: http://localhost:3000
+      MODEL_PROVIDER: mock
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.22.1
+          cache: npm
+      - run: npm ci
+      - run: npm run setup
+      - run: npm run db:deploy
+      - run: npx prisma generate
+      - run: npm run docs:check
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:integration
+      - run: npm run eval
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Start production web and worker
+        run: |
+          npm run worker > /tmp/defend-worker.log 2>&1 &
+          npm run start > /tmp/defend-web.log 2>&1 &
+          node scripts/wait-ready.mjs
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: output/playwright/

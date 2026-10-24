@@ -1,0 +1,52 @@
+name: defend
+services:
+  db:
+    image: postgres:18.4-bookworm
+    environment:
+      POSTGRES_USER: defend
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: defend
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U defend -d defend"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  migrate:
+    build: .
+    command: ["npm", "run", "db:deploy"]
+    environment: &app-environment
+      DATABASE_URL: postgresql://defend:${POSTGRES_PASSWORD}@db:5432/defend
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+      APP_SECRET: ${APP_SECRET:?Set APP_SECRET in .env}
+      MODEL_PROVIDER: mock
+    depends_on:
+      db:
+        condition: service_healthy
+  worker:
+    build: .
+    command: ["node", "dist/worker.js"]
+    environment: *app-environment
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  web:
+    build: .
+    ports: ["127.0.0.1:3000:3000"]
+    environment: *app-environment
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      worker:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+volumes:
+  postgres:

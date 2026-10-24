@@ -1,25 +1,76 @@
 # Defend
-A project interview coach that helps students explain, defend, and improve their understanding of their own software.
 
-**Repository status:** development specification only. No application, database, provider integration, deployment, or product tests have been implemented. The documentation checks are executable; the product commands are a planned contract.
+A private project interview workspace for students: bring your source, confirm the context, practise explaining your decisions, and reflect with source-linked notes.
 
-Start with [the documentation index](docs/README.md), then [requirements](docs/01-product-requirements.md) and [the implementation plan](docs/13-implementation-plan.md).
+**Status: conversational V1 preview.** Sample/upload → brief → conversation with feedback after each answer → report → retest → export/delete is implemented, with light/dark/system themes, animations and optional browser dictation/speech. The included sample has a deterministic, source-linked coaching checklist. Your own project receives explanation-structure coaching until you configure **Groq Free or local Ollama**. Both adapters are implemented. Live Groq preparation has been verified on one real C++ folder; conversation quality still needs human review. Public deployment and human trials remain open.
 
-## Product commitments
-- An adaptive project interview, followed by evidence-linked feedback and a fresh retest.
-- Typing, Wispr, and other external dictation tools use the same answer composer.
-- Dictation and speech output are replaceable. No Wispr runtime dependency.
-- No claim of official grades, verified authorship, or guaranteed interview success.
-- Real classmate validation and a public sample experience for the hackathon.
+## Run locally
 
-## Documentation check
-Run from this repository with Node.js:
+Requires Node.js **22.12+** (Node 24 LTS recommended) and npm. Windows is supported without Docker.
+
 ```text
-node scripts/check-docs.mjs
+npm ci
+npm run setup
+npm run db:local
 ```
 
-## Build readiness
-The seven-day release scope, contracts, prompts, state transitions, acceptance gates, and operations are specified. Choose provider credentials, hosting account, and a spend ceiling before enabling paid integrations. Defaults and remaining choices are recorded in [decisions](docs/15-decisions-and-risks.md).
+Keep the database terminal open. In another terminal:
 
-Research: [existing-system analysis](docs/defend-architecture-research.md). Specifications dated 24 October 2026, version 0.1.
+```text
+npm run db:deploy
+npx prisma generate
+npm run db:seed
+npm run worker:dev
+```
 
+Keep the worker open. In a third terminal:
+
+```text
+npm run dev
+```
+
+Open [the local workspace](http://localhost:3000). Use localhost, matching APP_ORIGIN, for cookie and Origin validation. Accept the visible storage consent and try the sample, or add your own UTF-8 files. No provider credentials are needed for guided practice.
+
+Setup creates a gitignored .env.local with a random app secret. The local PostgreSQL launcher stores development data under gitignored .data/. For an existing PostgreSQL server, set DATABASE_URL and skip db:local.
+
+The database must use **UTF-8**. New local clusters/databases explicitly select it. For a legacy Windows database using WIN1252, stop web/worker and other app database connections, keep PostgreSQL running, then run `npm run db:utf8`. The repair snapshots and verifies every application table, switches to UTF-8 under the same database name and keeps the original as a disabled rollback database. It does not reset data or change credentials. Restart web/worker afterward. Manual snapshots under .data/backups/ and the legacy database are separate from active workspace deletion and are not automatically purged; remove them through local administration when no longer needed. See [the developer guide](docs/11-developer-guide.md).
+
+## Free AI coaching and larger projects
+
+Open [Coach setup](http://localhost:3000/settings) or follow the [free AI guide](docs/17-free-ai-setup.md). Groq Free needs a free account key; Ollama needs an installed local model and enough RAM/VRAM. There is no automatic paid fallback. Restart web and worker after changing provider settings, then prepare a fresh project to match the consent and saved plan.
+
+Choose a folder or selected files: up to **500 files, 256 KiB/file, 8 MiB total and 2,000,000 characters**. C/C++ source, headers, templates, Makefiles and configuration text are accepted alongside JS/TS/Python. Folder selection respects root/nested **.gitignore** rules, shows exclusion reasons and skips common bundled libraries. Re-selecting a folder replaces the list; documentation-only context requires acknowledgement. JS/TS symbols and relative imports are indexed without executing code; other languages use text retrieval. Bounded source packs are retrieved per topic; coverage distinguishes indexed source from model-reviewed excerpts. This is focused interview preparation, not a claim that every line in an arbitrary large repository has been understood.
+
+## Verify
+
+```text
+npm run docs:check
+npm run typecheck
+npm run lint
+npm test
+npm run test:integration
+npm run eval
+npm run build
+```
+
+Integration tests need the database running and the normal worker **stopped**: tests exercise claims, races and failures directly. Model transport tests use synthetic responses and make no external inference calls. Browser checks need web and worker running:
+
+```text
+npx playwright install chromium
+npm run test:e2e
+```
+
+Screenshots, accessibility scans and evaluation results are saved under gitignored output/. The eval command checks schema and exact quotation integrity; it does **not** establish AI quality. GitHub Actions runs checks with PostgreSQL and a production web/worker smoke test.
+
+## Architecture and delivery
+
+- Next.js 16 / React 19, strict TypeScript, PostgreSQL and Prisma 7.
+- Separate Node worker; transactional enqueue, expiring leases, conditional publication and bounded retries.
+- Hashed guest credentials; exact Origin checks, ownership scopes, idempotent writes and database quotas.
+- Source is never executed. Accepted answers live in PostgreSQL; unsent drafts stay in memory.
+- Domain modules are independent of UI/providers; runtime validation uses the committed JSON schema.
+- Optional browser dictation and speech; typing and external dictation share one textarea. Microphone starts only on request; review the transcript before sending. Browser recognition may use the browser vendor's service. Defend stores accepted text, not audio. No Wispr SDK, automatic send or numeric grade.
+
+[Compose](compose.yaml) and the [Dockerfile](Dockerfile) are prepared. Set a URL-safe POSTGRES_PASSWORD and random APP_SECRET in a gitignored .env, then run docker compose up --build. This binds the preview to localhost and applies migrations before web/worker start. **Container execution is unverified here because Docker is not installed.** Public hosting is not configured.
+
+Start with the [documentation index](docs/README.md), [developer guide](docs/11-developer-guide.md), and [implementation status](docs/16-implementation-status.md). The user's conversational-coaching, theme and free-provider revisions are recorded in the [decision log](docs/15-decisions-and-risks.md). Human-reviewed model quality and hosted operations remain release gates.

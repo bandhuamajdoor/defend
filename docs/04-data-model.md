@@ -1,6 +1,8 @@
 # Data model and invariants
 PostgreSQL, UUID primary keys, UTC timestamps, explicit foreign keys. Owner scope is required for all queries; UUID unpredictability is not authorisation. API/domain enum spelling comes from [domain schema](contracts/domain.schema.json).
 
+Current preview refinements: the hashed credential is on Owner, with fixed creation-based expiry. Session.state stores the canonical controller snapshot, including append-only coaching, while questions/answers/events remain normalized. Version.fileMap caches the immutable symbol/import index. Report.engine records guided_sample, structure_only, groq or ollama. ModelCall stores job-linked attempt status, token usage and provider/model only; RateBucket holds atomic request allowances. Paid usage_reservations below remain a future target, not implemented billing.
+
 ## Entities
 | Table | Key fields | Relations / constraints |
 | --- | --- | --- |

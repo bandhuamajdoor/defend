@@ -61,7 +61,7 @@ function inspectReferences(value, file) {
 for (const [file, value] of documents) inspectReferences(value, file);
 const schemaFile = path.join(root, 'docs/contracts/domain.schema.json');
 const domain = documents.get(schemaFile);
-const supported = new Set(['$schema','$id','$defs','$ref','title','description','type','const','enum','anyOf','properties','required','additionalProperties','items','minItems','maxItems','minLength','maxLength','minimum','pattern','format']);
+const supported = new Set(['$schema','$id','$defs','$ref','title','description','type','const','enum','anyOf','properties','required','additionalProperties','items','minItems','maxItems','minLength','maxLength','minimum','maximum','pattern','format']);
 function inspectSchema(schema, where) {
   if (!schema || typeof schema !== 'object') return;
   for (const key of Object.keys(schema)) if (!supported.has(key)) fail(`Checker needs support for schema keyword ${key} at ${where}`);
@@ -90,6 +90,7 @@ function validate(schema, value, file, where) {
     if (schema.format === 'date-time' && (!/^\d{4}-\d\d-\d\dT/.test(value) || Number.isNaN(Date.parse(value)))) errors.push(`${where}: invalid date-time`);
   }
   if (typeof value === 'number' && schema.minimum !== undefined && value < schema.minimum) errors.push(`${where}: below minimum`);
+  if (typeof value === 'number' && schema.maximum !== undefined && value > schema.maximum) errors.push(`${where}: above maximum`);
   if (Array.isArray(value)) {
     if (schema.minItems !== undefined && value.length < schema.minItems) errors.push(`${where}: too few items`);
     if (schema.maxItems !== undefined && value.length > schema.maxItems) errors.push(`${where}: too many items`);
