@@ -62,10 +62,15 @@ try {
     });
     // Simulate acceptance followed by a lost HTTP response. The UI must recover
     // from canonical state, without losing the accepted answer or duplicating it.
-    await page.route('**/api/v1/sessions/*/answers',async route=>{
-      await route.fetch();
-      await route.abort();
-    },{times:1});
+    await page.route(
+      "**/api/v1/sessions/*/answers",
+      async (route) => {
+        const accepted = await route.fetch();
+        expect(accepted.status()).toBe(202);
+        await route.abort();
+      },
+      { times: 1 },
+    );
     await page
       .getByLabel("YOUR ANSWER", { exact: false })
       .fill(
@@ -77,7 +82,9 @@ try {
     await expect(
       page.getByRole("heading", { name: /Walk me through what happens/ }),
     ).toBeVisible({ timeout: 20000 });
-    await expect(page.getByLabel('YOUR ANSWER',{exact:false})).toHaveValue('');
+    await expect(page.getByLabel("YOUR ANSWER", { exact: false })).toHaveValue(
+      "",
+    );
   });
   await check(
     "accepted answer recovery, pause/resume and source context",

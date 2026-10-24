@@ -44,6 +44,13 @@ let alice: Guest,
   project: ProjectDTO,
   session: PublicSession,
   firstJob: string;
+function publicationGate() {
+  let release!: () => void;
+  const wait = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  return { wait, release: () => release() };
+}
 async function drain() {
   for (let i = 0; i < 25; i++) {
     if (!(await runOne({ delayMs: 0 }))) return;
@@ -172,13 +179,15 @@ describe.sequential("real PostgreSQL API + worker flow", () => {
     expect(answered.status).toBe(202);
     const job = await claim();
     expect(job).not.toBeNull();
-    const completion = runJob(job!, { delayMs: 150 });
+    const gate = publicationGate();
+    const completion = runJob(job!, { delayMs: 0, beforeCommit: gate.wait });
     await snapshot();
     const paused = await alice.call(
       `/sessions/${session.id}/controls`,
       "POST",
       { action: "pause", expectedRevision: session.revision },
     );
+    gate.release();
     expect(paused.status).toBe(202);
     await completion;
     await snapshot();
@@ -254,7 +263,10 @@ describe.sequential("real PostgreSQL API + worker flow", () => {
     });
     expect(skip.status).toBe(202);
     const job = await claim();
-    const late = job ? runJob(job, { delayMs: 150 }) : Promise.resolve();
+    const gate = publicationGate();
+    const late = job
+      ? runJob(job, { delayMs: 0, beforeCommit: gate.wait })
+      : Promise.resolve();
     await snapshot();
     if (session.status !== "evaluating")
       expect(
@@ -265,6 +277,7 @@ describe.sequential("real PostgreSQL API + worker flow", () => {
           })
         ).status,
       ).toBe(202);
+    gate.release();
     await late;
     await drain();
     await snapshot();

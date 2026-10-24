@@ -19,7 +19,11 @@ export async function claim(): Promise<Job | null> {
 }
 export async function runJob(
   job: Job,
-  options: { fail?: boolean; delayMs?: number } = {},
+  options: {
+    fail?: boolean;
+    delayMs?: number;
+    beforeCommit?: Promise<void>;
+  } = {},
 ) {
   const heartbeat = setInterval(() => {
     void db.job
@@ -103,6 +107,9 @@ export async function runJob(
       : job.kind === "evaluate_session"
         ? evaluate(state, plan)
         : nextQuestion(state, plan, evidence);
+    // A controlled publication barrier lets integration tests exercise actual
+    // race orderings without depending on CI machine speed.
+    if (options.beforeCommit) await options.beforeCommit;
     await db.$transaction(
       async (tx) => {
         // The same lock order as API mutations fences pause, end, delete and stale workers.
