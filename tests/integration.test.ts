@@ -8,6 +8,9 @@ import {
   vi,
 } from "vitest";
 import { randomUUID } from "node:crypto";
+import { Client } from "pg";
+import { spawnSync } from "node:child_process";
+import { migrateLocalUtf8 } from "../scripts/migrate-local-utf8.mjs";
 import { db } from "../src/db/client";
 import { handle } from "../src/services/api";
 import { claim, runJob, runOne, maintain } from "../src/jobs/runner";
@@ -600,5 +603,161 @@ describe.sequential(
       ).toBe(true);
       expect(transport).not.toHaveBeenCalled();
     });
+    it("accepts Unicode project text and preserves exact source through preparation", async () => {
+      const guest = await new Guest().init();
+      const text =
+        "# Storage engine\n├── src/main.cpp\n└── include/kv\n中文 · हिन्दी · 🚀";
+      const op = await guest.call("/projects", "POST", {
+        title: "Unicode storage fixture",
+        brief: "A C++ project with Unicode documentation.",
+        contribution: "Test fixture.",
+        consent: true,
+        files: [
+          { path: "README.md", text },
+          { path: "src/main.cpp", text: "int main() { return 0; }" },
+        ],
+      });
+      expect(op.status).toBe(202);
+      await drain();
+      const p = (await guest.call(`/projects/${op.data.resourceId}`))
+        .data as ProjectDTO;
+      expect(p.versions[0].status).toBe("ready");
+      const saved = await db.sourceFile.findFirst({
+        where: { versionId: p.versions[0].id, path: "README.md" },
+      });
+      expect(saved?.text).toBe(text);
+    });
   },
 );
+
+describe("legacy Windows database repair", () => {
+  it("reports upload failures without claiming interview answers exist or exposing raw errors", async () => {
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    const failure = vi
+      .spyOn(db, "$transaction")
+      .mockRejectedValueOnce(
+        Object.assign(
+          new Error(
+            "Private source and database credentials must not be logged",
+          ),
+          { code: "P2039" },
+        ),
+      );
+    try {
+      const response = await handle(
+        new Request(`${appOrigin}/api/v1/projects`, {
+          method: "POST",
+          headers: { origin: appOrigin, "content-type": "application/json" },
+          body: "{}",
+        }),
+      );
+      const data = await response.json();
+      expect(response.status).toBe(503);
+      expect(data.error.message).toContain(
+        "selected files remain on this page",
+      );
+      expect(data.error.message).not.toContain("answers");
+      const diagnostic = JSON.parse(logged.mock.calls[0][0]);
+      expect(diagnostic).toMatchObject({
+        event: "api_failure",
+        requestId: data.error.requestId,
+        code: "P2039",
+      });
+      expect(JSON.stringify(logged.mock.calls)).not.toContain("Private source");
+    } finally {
+      failure.mockRestore();
+      logged.mockRestore();
+    }
+  });
+  it("migrates WIN1252 data to UTF-8 without changing existing IDs or losing rows", async () => {
+    const name = `utf8_test_${randomUUID().replaceAll("-", "").slice(0, 12)}`;
+    const sourceUrl = new URL(process.env.DATABASE_URL!);
+    sourceUrl.pathname = "/" + name;
+    const adminUrl = new URL(sourceUrl);
+    adminUrl.pathname = "/postgres";
+    const admin = new Client({ connectionString: adminUrl.toString() });
+    await admin.connect();
+    let rollback: string | undefined;
+    try {
+      await admin.query(
+        `CREATE DATABASE "${name}" WITH TEMPLATE template0 ENCODING 'WIN1252' LC_COLLATE 'C' LC_CTYPE 'C'`,
+      );
+      const migration = spawnSync(
+        process.execPath,
+        ["node_modules/prisma/build/index.js", "migrate", "deploy"],
+        {
+          env: { ...process.env, DATABASE_URL: sourceUrl.toString() },
+          windowsHide: true,
+        },
+      );
+      expect(migration.status).toBe(0);
+      const source = new Client({ connectionString: sourceUrl.toString() });
+      await source.connect();
+      const ids = Array.from({ length: 4 }, () => randomUUID());
+      try {
+        await source.query(
+          'INSERT INTO "Owner" (id,"tokenHash","expiresAt") VALUES ($1,$2,NOW()+INTERVAL \'1 day\')',
+          [ids[0], randomUUID()],
+        );
+        await source.query(
+          'INSERT INTO "Project" (id,"ownerId",title,"expiresAt") VALUES ($1,$2,$3,NOW()+INTERVAL \'1 day\')',
+          [ids[1], ids[0], "Existing café project"],
+        );
+        await source.query(
+          'INSERT INTO "Version" (id,"projectId",ordinal,brief,contribution,"contentHash") VALUES ($1,$2,1,$3,$4,$5)',
+          [
+            ids[2],
+            ids[1],
+            "Existing brief",
+            "Existing contribution",
+            "fixture-hash",
+          ],
+        );
+        await source.query(
+          'INSERT INTO "SourceFile" (id,"versionId",path,text,sha256,"byteSize","lineCount") VALUES ($1,$2,$3,$4,$5,16,1)',
+          [ids[3], ids[2], "README.md", "Existing café text", "fixture-sha"],
+        );
+      } finally {
+        await source.end();
+      }
+      const result = await migrateLocalUtf8(
+        sourceUrl.toString(),
+        "output/integration/utf8-backups",
+      );
+      rollback = result.rollbackDatabase;
+      expect(result.changed).toBe(true);
+      expect(result.counts?.SourceFile).toBe(1);
+      const target = new Client({ connectionString: sourceUrl.toString() });
+      await target.connect();
+      try {
+        expect(
+          (await target.query("SHOW server_encoding")).rows[0].server_encoding,
+        ).toBe("UTF8");
+        expect(
+          (await target.query('SELECT id,text FROM "SourceFile"')).rows,
+        ).toEqual([{ id: ids[3], text: "Existing café text" }]);
+        await target.query('UPDATE "SourceFile" SET text=$1 WHERE id=$2', [
+          "├── src/main.cpp\n中文 हिन्दी 🚀",
+          ids[3],
+        ]);
+        expect(
+          (await target.query('SELECT text FROM "SourceFile"')).rows[0].text,
+        ).toContain("🚀");
+      } finally {
+        await target.end();
+      }
+      const old = (
+        await admin.query(
+          "SELECT datallowconn, pg_encoding_to_char(encoding) AS encoding FROM pg_database WHERE datname=$1",
+          [rollback],
+        )
+      ).rows[0];
+      expect(old).toEqual({ datallowconn: false, encoding: "WIN1252" });
+    } finally {
+      await admin.query(`DROP DATABASE IF EXISTS "${name}" WITH (FORCE)`);
+      if (rollback && new RegExp(`^${name}_legacy_[a-z0-9]+$`).test(rollback))
+        await admin.query(`DROP DATABASE "${rollback}" WITH (FORCE)`);
+      await admin.end();
+    }
+  }, 20000);
+});

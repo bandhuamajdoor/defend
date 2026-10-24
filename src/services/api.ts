@@ -176,6 +176,15 @@ async function addVersion(
   isSample = false,
 ) {
   const parsed = ingest(input);
+  const [database] = await tx.$queryRaw<
+    { encoding: string }[]
+  >`SELECT current_setting('server_encoding') AS encoding`;
+  requireThat(
+    database?.encoding === "UTF8",
+    "DEPENDENCY_UNAVAILABLE",
+    "The project database must use UTF-8 to store source files. Run the local database UTF-8 repair before retrying. Your selected files remain on this page.",
+    503,
+  );
   const runtime = runtimeInfo();
   validateBackend();
   requireThat(
@@ -803,19 +812,26 @@ export async function handle(req: Request) {
     }
     checkConfig();
     if (path[0] === "health") {
+      const [database] = await db.$queryRaw<
+        { encoding: string }[]
+      >`SELECT current_setting('server_encoding') AS encoding`;
       const heartbeat = await db.workerHeartbeat.findUnique({
         where: { id: "worker" },
       });
       return NextResponse.json(
         {
           status:
-            heartbeat && Date.now() - heartbeat.updatedAt.getTime() < 60000
+            database?.encoding === "UTF8" &&
+            heartbeat &&
+            Date.now() - heartbeat.updatedAt.getTime() < 60000
               ? "ok"
               : "unavailable",
         },
         {
           status:
-            heartbeat && Date.now() - heartbeat.updatedAt.getTime() < 60000
+            database?.encoding === "UTF8" &&
+            heartbeat &&
+            Date.now() - heartbeat.updatedAt.getTime() < 60000
               ? 200
               : 503,
         },
@@ -938,12 +954,32 @@ export async function handle(req: Request) {
   } catch (e) {
     if (new URL(req.url).pathname === "/api/v1/health")
       return NextResponse.json({ status: "unavailable" }, { status: 503 });
+    const requestId = randomUUID();
+    if (!(e instanceof AppError)) {
+      const code = (e as { code?: unknown } | null)?.code;
+      // Correlate unexpected failures without logging source, prompts, raw DB
+      // errors or connection strings, which can contain uploaded text/secrets.
+      console.error(
+        JSON.stringify({
+          event: "api_failure",
+          requestId,
+          method: req.method,
+          errorType: e instanceof Error ? e.constructor.name : typeof e,
+          ...(typeof code === "string" && /^[A-Z0-9_]{1,40}$/.test(code)
+            ? { code }
+            : {}),
+        }),
+      );
+    }
     const error =
       e instanceof AppError
         ? e
         : new AppError(
             "DEPENDENCY_UNAVAILABLE",
-            "The service is temporarily unavailable. Your accepted answers remain saved.",
+            req.method === "POST" &&
+              /^\/api\/v1\/projects(?:\/|$)/.test(new URL(req.url).pathname)
+              ? "Project preparation could not be started. Your selected files remain on this page. Please retry."
+              : "The service could not complete this request. Please retry; previously accepted answers remain saved.",
             503,
           );
     return NextResponse.json(
@@ -951,7 +987,7 @@ export async function handle(req: Request) {
         error: {
           code: error.code,
           message: error.message,
-          requestId: randomUUID(),
+          requestId,
           retryable: error.status === 503,
           ...(error.currentRevision === undefined
             ? {}
