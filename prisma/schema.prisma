@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+}
+model Owner {
+  id String @id @default(uuid()) @db.Uuid
+  tokenHash String @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  deletedAt DateTime?
+  projects Project[]
+  sessions Session[]
+  jobs Job[]
+  requests Idempotency[]
+}
+model Project {
+  id String @id @default(uuid()) @db.Uuid
+  ownerId String @db.Uuid
+  owner Owner @relation(fields:[ownerId],references:[id],onDelete:Cascade)
+  title String
+  sample Boolean @default(false)
+  createdAt DateTime @default(now())
+  lastActivityAt DateTime @default(now())
+  expiresAt DateTime
+  deletedAt DateTime?
+  versions Version[]
+  @@index([ownerId])
+}
+model Version {
+  id String @id @default(uuid()) @db.Uuid
+  projectId String @db.Uuid
+  project Project @relation(fields:[projectId],references:[id],onDelete:Cascade)
+  ordinal Int
+  brief String
+  contribution String
+  contentHash String
+  status String @default("preparing")
+  consentAt DateTime @default(now())
+  consentVersion String @default("mock-v1")
+  files SourceFile[]
+  evidence Evidence[]
+  plans Plan[]
+  sessions Session[]
+  @@unique([projectId,ordinal])
+}
+model SourceFile {
+  id String @id @default(uuid()) @db.Uuid
+  versionId String @db.Uuid
+  version Version @relation(fields:[versionId],references:[id],onDelete:Cascade)
+  path String
+  text String
+  sha256 String
+  byteSize Int
+  lineCount Int
+  evidence Evidence[]
+  @@unique([versionId,path])
+}
+model Evidence {
+  id String @id @default(uuid()) @db.Uuid
+  versionId String @db.Uuid
+  version Version @relation(fields:[versionId],references:[id],onDelete:Cascade)
+  fileId String @db.Uuid
+  file SourceFile @relation(fields:[fileId],references:[id],onDelete:Cascade)
+  startLine Int
+  endLine Int
+  excerpt String
+  sha256 String
+  @@index([versionId])
+}
+model Plan {
+  id String @id @default(uuid()) @db.Uuid
+  versionId String @db.Uuid
+  version Version @relation(fields:[versionId],references:[id],onDelete:Cascade)
+  mode String @default("normal")
+  revision Int @default(1)
+  content Json
+  confirmedAt DateTime?
+  modelId String @default("deterministic-mock-v1")
+  promptVersion String @default("v1")
+  sessions Session[]
+  @@index([versionId,mode,revision])
+}
+model Session {
+  id String @id @default(uuid()) @db.Uuid
+  ownerId String @db.Uuid
+  owner Owner @relation(fields:[ownerId],references:[id],onDelete:Cascade)
+  versionId String @db.Uuid
+  version Version @relation(fields:[versionId],references:[id],onDelete:Cascade)
+  planId String @db.Uuid
+  plan Plan @relation(fields:[planId],references:[id],onDelete:Cascade)
+  mode String @default("normal")
+  parentReportId String? @db.Uuid
+  status String @default("preparing")
+  revision Int @default(0)
+  state Json
+  createdAt DateTime @default(now())
+  questions Question[]
+  answers Answer[]
+  events SessionEvent[]
+  reports Report[]
+  @@index([ownerId])
+}
+model Question {
+  id String @id @db.Uuid
+  sessionId String @db.Uuid
+  session Session @relation(fields:[sessionId],references:[id],onDelete:Cascade)
+  sequence Int
+  topicId String
+  text String
+  kind String
+  evidenceIds String[]
+  createdAt DateTime @default(now())
+  answers Answer[]
+  @@unique([sessionId,sequence])
+}
+model Answer {
+  id String @id @db.Uuid
+  sessionId String @db.Uuid
+  session Session @relation(fields:[sessionId],references:[id],onDelete:Cascade)
+  questionId String @unique @db.Uuid
+  question Question @relation(fields:[questionId],references:[id],onDelete:Cascade)
+  turnId String @db.Uuid
+  text String
+  acceptedAt DateTime @default(now())
+  @@unique([sessionId,turnId])
+}
+model SessionEvent {
+  id String @id @default(uuid()) @db.Uuid
+  sessionId String @db.Uuid
+  session Session @relation(fields:[sessionId],references:[id],onDelete:Cascade)
+  type String
+  payload Json
+  createdAt DateTime @default(now())
+}
+model Job {
+  id String @id @default(uuid()) @db.Uuid
+  ownerId String @db.Uuid
+  owner Owner @relation(fields:[ownerId],references:[id],onDelete:Cascade)
+  kind String
+  entityId String @db.Uuid
+  expectedRevision Int
+  status String @default("queued")
+  attempts Int @default(0)
+  leaseToken String? @db.Uuid
+  leaseUntil DateTime?
+  runAfter DateTime @default(now())
+  errorCode String?
+  resultId String? @db.Uuid
+  createdAt DateTime @default(now())
+  @@index([status,runAfter])
+  @@index([ownerId,entityId])
+}
+model Report {
+  id String @id @default(uuid()) @db.Uuid
+  sessionId String @db.Uuid
+  session Session @relation(fields:[sessionId],references:[id],onDelete:Cascade)
+  revision Int @default(1)
+  content Json
+  createdAt DateTime @default(now())
+  feedback Feedback[]
+  @@unique([sessionId,revision])
+}
+model Feedback {
+  id String @id @default(uuid()) @db.Uuid
+  reportId String @db.Uuid
+  report Report @relation(fields:[reportId],references:[id],onDelete:Cascade)
+  findingId String @db.Uuid
+  note String
+  createdAt DateTime @default(now())
+}
+model Idempotency {
+  id String @id @default(uuid()) @db.Uuid
+  ownerId String @db.Uuid
+  owner Owner @relation(fields:[ownerId],references:[id],onDelete:Cascade)
+  scope String
+  key String @db.Uuid
+  hash String
+  code Int
+  response Json
+  expiresAt DateTime
+  @@unique([ownerId,scope,key])
+}
+model RateBucket {
+  key String @id
+  count Int @default(0)
+  expiresAt DateTime
+}
+model DeletionReceipt {
+  id String @id @default(uuid()) @db.Uuid
+  resourceId String @db.Uuid
+  createdAt DateTime @default(now())
+}
+model WorkerHeartbeat {
+  id String @id
+  updatedAt DateTime
+}
