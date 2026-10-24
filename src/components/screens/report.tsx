@@ -68,10 +68,15 @@ export function Report({ id }: { id: string }) {
   }
   if (!r)
     return resource.error ? (
-      <ErrorNotice
-        message={resource.error}
-        onRetry={() => void resource.refresh()}
-      />
+      <>
+        <ErrorNotice
+          message={resource.error}
+          onRetry={() => void resource.refresh()}
+        />
+        <Link className="btn secondary" href={`/sessions/${id}`}>
+          Return to practice to retry
+        </Link>
+      </>
     ) : (
       <Busy text="Preparing your report. Accepted answers remain saved…" />
     );

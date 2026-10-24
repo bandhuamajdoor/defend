@@ -102,6 +102,7 @@ export interface PublicSession {
   activeSeconds: number;
   budgetReached: boolean;
   reportId: string | null;
+  jobId?: string | null;
 }
 export interface Quote {
   answerId: string;

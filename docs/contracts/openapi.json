@@ -3,7 +3,7 @@
   "info": {
     "title": "Defend API",
     "version": "0.1.0",
-    "description": "Planned API. Ownership, Origin checking, idempotency and revision rules are mandatory; see ../05-api-contract.md."
+    "description": "Implemented guest API for the local mock preview. See ../16-implementation-status.md for remaining release gates."
   },
   "servers": [
     {
@@ -133,7 +133,16 @@
     },
     "/projects/sample": {
       "post": {
-        "requestBody": {"required":true,"content":{"application/json":{"schema":{"$ref":"./domain.schema.json#/$defs/ConsentRequest"}}}},
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./domain.schema.json#/$defs/ConsentRequest"
+              }
+            }
+          }
+        },
         "operationId": "createSample",
         "summary": "Copy the built-in sample and queue preparation",
         "parameters": [
@@ -962,7 +971,45 @@
         },
         "security": []
       }
+    },
+    "/projects/{projectId}/sessions": {
+      "get": {
+        "operationId": "listProjectSessions",
+        "summary": "List owned interview history for a project",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get project metadata and latest plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/ProjectSessionList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; see API behaviour specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./domain.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
-

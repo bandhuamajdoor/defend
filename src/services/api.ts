@@ -658,7 +658,13 @@ async function read(ownerId: string, path: string[], req: Request) {
   }
   if (area === "sessions" && id) {
     const s = await getSession(db, ownerId, id);
-    if (!action) return NextResponse.json(sessionDTO(s));
+    if (!action) {
+      const job = await db.job.findFirst({
+        where: { entityId: s.id, ownerId },
+        orderBy: { createdAt: "desc" },
+      });
+      return NextResponse.json({ ...sessionDTO(s), jobId: job?.id ?? null });
+    }
     const r = await db.report.findFirst({
       where: { sessionId: id },
       orderBy: { revision: "desc" },

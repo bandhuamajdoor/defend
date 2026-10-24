@@ -98,7 +98,8 @@ export function Interview({ id }: { id: string }) {
   const questionText = q?.text;
   const questionId = q?.id;
   useEffect(() => {
-    if (questionText && speech && s?.status === "awaiting_answer") play(questionText);
+    if (questionText && speech && s?.status === "awaiting_answer")
+      play(questionText);
     else if (s?.status === "paused" && "speechSynthesis" in window)
       window.speechSynthesis.cancel();
   }, [questionId, questionText, speech, s?.status, play]);
@@ -153,7 +154,21 @@ export function Interview({ id }: { id: string }) {
       setDraft("");
       remember(op);
       await resource.refresh();
-    } else await resource.refresh();
+    } else {
+      const canonical = await resource.refresh();
+      if (
+        canonical?.turns.some(
+          (t) =>
+            t.role === "student" && t.questionId === q.id && t.text === draft,
+        )
+      ) {
+        // A response can be lost after the transaction commits. The canonical
+        // transcript proves acceptance before the draft is cleared.
+        pendingTurn.current = crypto.randomUUID();
+        setDraft("");
+        mutation.setError("");
+      }
+    }
   }
   const pendingTurn = useRef("");
   useEffect(() => {
@@ -177,8 +192,13 @@ export function Interview({ id }: { id: string }) {
     } else await resource.refresh();
   }
   async function retry() {
-    if (!job) return;
-    const op = await mutation.run<Operation>(`/jobs/${job}/retry`, "POST", {});
+    const latestJob = s?.jobId ?? job;
+    if (!latestJob) return;
+    const op = await mutation.run<Operation>(
+      `/jobs/${latestJob}/retry`,
+      "POST",
+      {},
+    );
     if (op) {
       remember(op);
       await resource.refresh();

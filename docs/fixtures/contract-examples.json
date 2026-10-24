@@ -593,6 +593,19 @@
     "value": {
       "consent": true
     }
+  },
+  {
+    "name": "example-26-ProjectSessionList",
+    "schema": "ProjectSessionList",
+    "value": {
+      "sessions": [
+        {
+          "id": "00000000-0000-4000-8000-000000000006",
+          "status": "completed",
+          "mode": "normal",
+          "createdAt": "2026-10-24T12:00:00Z"
+        }
+      ]
+    }
   }
 ]
-

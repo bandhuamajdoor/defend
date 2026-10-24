@@ -2,49 +2,54 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://defend.invalid/contracts/domain.schema.json",
   "title": "Defend v0.1 domain and transport schemas",
-  "description": "Planned contract; semantic invariants are specified in the accompanying documents.",
+  "description": "Defend runtime contract. See the implementation status document for release limitations.",
   "$defs": {
     "RetestPlan": {
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "summary": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 4000
-    },
-    "contribution": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 2000
-    },
-    "uncertainties": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 0,
-        "maxLength": 500
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "contribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "uncertainties": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 500
+          },
+          "maxItems": 20,
+          "minItems": 0
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Topic"
+          },
+          "maxItems": 2,
+          "minItems": 2
+        }
       },
-      "maxItems": 20,
-      "minItems": 0
+      "required": ["summary", "contribution", "uncertainties", "topics"]
     },
-    "topics": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/Topic"
+    "ConsentRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "consent": {
+          "type": "boolean",
+          "const": true
+        }
       },
-      "maxItems": 2,
-      "minItems": 2
-    }
-  },
-  "required": [
-    "summary",
-    "contribution",
-    "uncertainties",
-    "topics"
-  ]
-},
-    "ConsentRequest": {"type":"object","additionalProperties":false,"properties":{"consent":{"type":"boolean","const":true}},"required":["consent"]},
+      "required": ["consent"]
+    },
     "UUID": {
       "type": "string",
       "format": "uuid"
@@ -75,12 +80,7 @@
     },
     "CriterionId": {
       "type": "string",
-      "enum": [
-        "implementation",
-        "design",
-        "failure",
-        "limits"
-      ]
+      "enum": ["implementation", "design", "failure", "limits"]
     },
     "Evidence": {
       "type": "object",
@@ -147,10 +147,7 @@
           "maxLength": 120000
         }
       },
-      "required": [
-        "path",
-        "text"
-      ]
+      "required": ["path", "text"]
     },
     "ProjectUpload": {
       "type": "object",
@@ -184,13 +181,7 @@
           "minItems": 1
         }
       },
-      "required": [
-        "title",
-        "brief",
-        "contribution",
-        "consent",
-        "files"
-      ]
+      "required": ["title", "brief", "contribution", "consent", "files"]
     },
     "Topic": {
       "type": "object",
@@ -271,12 +262,7 @@
           "minItems": 5
         }
       },
-      "required": [
-        "summary",
-        "contribution",
-        "uncertainties",
-        "topics"
-      ]
+      "required": ["summary", "contribution", "uncertainties", "topics"]
     },
     "Plan": {
       "type": "object",
@@ -297,12 +283,7 @@
           "$ref": "#/$defs/PreparedPlan"
         }
       },
-      "required": [
-        "id",
-        "revision",
-        "confirmed",
-        "content"
-      ]
+      "required": ["id", "revision", "confirmed", "content"]
     },
     "Version": {
       "type": "object",
@@ -318,11 +299,7 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "preparing",
-            "ready",
-            "failed"
-          ]
+          "enum": ["preparing", "ready", "failed"]
         },
         "files": {
           "type": "array",
@@ -348,12 +325,7 @@
                 "minimum": 1
               }
             },
-            "required": [
-              "id",
-              "path",
-              "byteSize",
-              "lineCount"
-            ]
+            "required": ["id", "path", "byteSize", "lineCount"]
           },
           "maxItems": 20,
           "minItems": 1
@@ -369,13 +341,7 @@
           ]
         }
       },
-      "required": [
-        "id",
-        "ordinal",
-        "status",
-        "files",
-        "plan"
-      ]
+      "required": ["id", "ordinal", "status", "files", "plan"]
     },
     "ProjectSummary": {
       "type": "object",
@@ -399,12 +365,7 @@
           "format": "date-time"
         }
       },
-      "required": [
-        "id",
-        "title",
-        "createdAt",
-        "expiresAt"
-      ]
+      "required": ["id", "title", "createdAt", "expiresAt"]
     },
     "Project": {
       "type": "object",
@@ -436,13 +397,7 @@
           "minItems": 1
         }
       },
-      "required": [
-        "id",
-        "title",
-        "createdAt",
-        "expiresAt",
-        "versions"
-      ]
+      "required": ["id", "title", "createdAt", "expiresAt", "versions"]
     },
     "ProjectList": {
       "type": "object",
@@ -457,9 +412,7 @@
           "minItems": 0
         }
       },
-      "required": [
-        "projects"
-      ]
+      "required": ["projects"]
     },
     "ConfirmRequest": {
       "type": "object",
@@ -484,12 +437,7 @@
           "maxLength": 2000
         }
       },
-      "required": [
-        "versionId",
-        "expectedRevision",
-        "summary",
-        "contribution"
-      ]
+      "required": ["versionId", "expectedRevision", "summary", "contribution"]
     },
     "Confirmation": {
       "type": "object",
@@ -516,13 +464,7 @@
           "const": true
         }
       },
-      "required": [
-        "projectId",
-        "versionId",
-        "planId",
-        "revision",
-        "confirmed"
-      ]
+      "required": ["projectId", "versionId", "planId", "revision", "confirmed"]
     },
     "Guest": {
       "type": "object",
@@ -537,10 +479,7 @@
           "format": "date-time"
         }
       },
-      "required": [
-        "ownerId",
-        "expiresAt"
-      ]
+      "required": ["ownerId", "expiresAt"]
     },
     "Operation": {
       "type": "object",
@@ -574,17 +513,10 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "accepted"
-          ]
+          "enum": ["accepted"]
         }
       },
-      "required": [
-        "resourceId",
-        "revision",
-        "jobId",
-        "status"
-      ]
+      "required": ["resourceId", "revision", "jobId", "status"]
     },
     "Deletion": {
       "type": "object",
@@ -596,15 +528,10 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "accepted"
-          ]
+          "enum": ["accepted"]
         }
       },
-      "required": [
-        "receiptId",
-        "status"
-      ]
+      "required": ["receiptId", "status"]
     },
     "SessionCreate": {
       "type": "object",
@@ -627,12 +554,7 @@
           "minimum": 0
         }
       },
-      "required": [
-        "projectId",
-        "versionId",
-        "planId",
-        "expectedRevision"
-      ]
+      "required": ["projectId", "versionId", "planId", "expectedRevision"]
     },
     "AnswerRequest": {
       "type": "object",
@@ -656,12 +578,7 @@
           "maxLength": 8000
         }
       },
-      "required": [
-        "questionId",
-        "turnId",
-        "expectedRevision",
-        "text"
-      ]
+      "required": ["questionId", "turnId", "expectedRevision", "text"]
     },
     "ControlRequest": {
       "type": "object",
@@ -669,23 +586,14 @@
       "properties": {
         "action": {
           "type": "string",
-          "enum": [
-            "pause",
-            "resume",
-            "skip",
-            "clarify",
-            "end"
-          ]
+          "enum": ["pause", "resume", "skip", "clarify", "end"]
         },
         "expectedRevision": {
           "type": "integer",
           "minimum": 0
         }
       },
-      "required": [
-        "action",
-        "expectedRevision"
-      ]
+      "required": ["action", "expectedRevision"]
     },
     "Question": {
       "type": "object",
@@ -707,11 +615,7 @@
         },
         "kind": {
           "type": "string",
-          "enum": [
-            "opening",
-            "follow_up",
-            "clarification"
-          ]
+          "enum": ["opening", "follow_up", "clarification"]
         },
         "evidence": {
           "type": "array",
@@ -726,14 +630,7 @@
           "format": "date-time"
         }
       },
-      "required": [
-        "id",
-        "topicId",
-        "text",
-        "kind",
-        "evidence",
-        "createdAt"
-      ]
+      "required": ["id", "topicId", "text", "kind", "evidence", "createdAt"]
     },
     "PublicTurn": {
       "type": "object",
@@ -745,11 +642,7 @@
         },
         "role": {
           "type": "string",
-          "enum": [
-            "interviewer",
-            "student",
-            "system"
-          ]
+          "enum": ["interviewer", "student", "system"]
         },
         "questionId": {
           "anyOf": [
@@ -772,13 +665,7 @@
           "format": "date-time"
         }
       },
-      "required": [
-        "id",
-        "role",
-        "questionId",
-        "text",
-        "createdAt"
-      ]
+      "required": ["id", "role", "questionId", "text", "createdAt"]
     },
     "Session": {
       "type": "object",
@@ -798,10 +685,7 @@
         },
         "mode": {
           "type": "string",
-          "enum": [
-            "normal",
-            "retest"
-          ]
+          "enum": ["normal", "retest"]
         },
         "status": {
           "$ref": "#/$defs/SessionStatus"
@@ -848,6 +732,17 @@
               "type": "null"
             }
           ]
+        },
+        "jobId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -884,13 +779,7 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "queued",
-            "running",
-            "succeeded",
-            "failed",
-            "cancelled"
-          ]
+          "enum": ["queued", "running", "succeeded", "failed", "cancelled"]
         },
         "attempts": {
           "type": "integer",
@@ -953,11 +842,7 @@
         },
         "outcome": {
           "type": "string",
-          "enum": [
-            "supported",
-            "contradicted",
-            "unresolved"
-          ]
+          "enum": ["supported", "contradicted", "unresolved"]
         },
         "evidenceIds": {
           "type": "array",
@@ -989,12 +874,7 @@
       "properties": {
         "action": {
           "type": "string",
-          "enum": [
-            "ask",
-            "follow_up",
-            "advance_topic",
-            "finish"
-          ]
+          "enum": ["ask", "follow_up", "advance_topic", "finish"]
         },
         "topicId": {
           "anyOf": [
@@ -1065,10 +945,7 @@
           "maxLength": 2000
         }
       },
-      "required": [
-        "answerId",
-        "quote"
-      ]
+      "required": ["answerId", "quote"]
     },
     "CriterionAssessment": {
       "type": "object",
@@ -1101,11 +978,7 @@
         },
         "confidence": {
           "type": "string",
-          "enum": [
-            "low",
-            "medium",
-            "high"
-          ]
+          "enum": ["low", "medium", "high"]
         }
       },
       "required": [
@@ -1134,11 +1007,7 @@
         },
         "outcome": {
           "type": "string",
-          "enum": [
-            "supported",
-            "contradicted",
-            "unresolved"
-          ]
+          "enum": ["supported", "contradicted", "unresolved"]
         },
         "title": {
           "type": "string",
@@ -1315,10 +1184,7 @@
           "minItems": 1
         }
       },
-      "required": [
-        "reportId",
-        "conceptIds"
-      ]
+      "required": ["reportId", "conceptIds"]
     },
     "FeedbackRequest": {
       "type": "object",
@@ -1334,10 +1200,7 @@
           "maxLength": 2000
         }
       },
-      "required": [
-        "findingId",
-        "note"
-      ]
+      "required": ["findingId", "note"]
     },
     "FeedbackReceipt": {
       "type": "object",
@@ -1349,15 +1212,10 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "recorded"
-          ]
+          "enum": ["recorded"]
         }
       },
-      "required": [
-        "id",
-        "status"
-      ]
+      "required": ["id", "status"]
     },
     "Error": {
       "type": "object",
@@ -1400,17 +1258,10 @@
               "minimum": 0
             }
           },
-          "required": [
-            "code",
-            "message",
-            "requestId",
-            "retryable"
-          ]
+          "required": ["code", "message", "requestId", "retryable"]
         }
       },
-      "required": [
-        "error"
-      ]
+      "required": ["error"]
     },
     "Health": {
       "type": "object",
@@ -1418,16 +1269,46 @@
       "properties": {
         "status": {
           "type": "string",
-          "enum": [
-            "ok",
-            "unavailable"
-          ]
+          "enum": ["ok", "unavailable"]
         }
       },
-      "required": [
-        "status"
-      ]
+      "required": ["status"]
+    },
+    "ProjectSessionSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "status": {
+          "$ref": "#/$defs/SessionStatus"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["normal", "retest"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "status", "mode", "createdAt"]
+    },
+    "ProjectSessionList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sessions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectSessionSummary"
+          },
+          "minItems": 0,
+          "maxItems": 100
+        }
+      },
+      "required": ["sessions"]
     }
   }
 }
-
