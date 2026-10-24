@@ -82,6 +82,22 @@ export function sessionDTO(
     activeSeconds: Math.floor(elapsed(state, Date.now()) / 1000),
     budgetReached: budgetReached(state, s.mode, Date.now()),
     reportId: state.reportId,
+    coaching: state.coaching ?? [],
+    engine:
+      state.coaching?.at(-1)?.source ??
+      (s.plan.modelId.startsWith("groq:")
+        ? "groq"
+        : s.plan.modelId.startsWith("ollama:")
+          ? "ollama"
+          : s.plan.modelId.startsWith("guided_sample:")
+            ? "guided_sample"
+            : state.coachMode
+              ? "structure_only"
+              : "legacy_mock"),
+    topicProgress: {
+      current: Math.min(state.topicIndex + 1, plan.topics.length),
+      total: plan.topics.length,
+    },
   };
 }
 export function reportDTO(r: Report, evidence: Evidence[]): ReportDTO {
@@ -89,9 +105,14 @@ export function reportDTO(r: Report, evidence: Evidence[]): ReportDTO {
     id: r.id,
     sessionId: r.sessionId,
     revision: r.revision,
-    rubricVersion: "v1-mock-preview",
+    rubricVersion:
+      r.engine === "legacy_mock" ? "v1-mock-preview" : `v2-${r.engine}`,
     createdAt: r.createdAt.toISOString(),
     content: r.content as unknown as ReportContent,
-    evidence,
+    evidence: evidence.filter((e) =>
+      (r.content as unknown as ReportContent).findings.some((f) =>
+        f.evidenceIds.includes(e.id),
+      ),
+    ),
   };
 }

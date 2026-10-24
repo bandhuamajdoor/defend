@@ -4,9 +4,25 @@ import { db, json } from "../db/client";
 import { checkConfig } from "../services/config";
 import { evidenceDTO } from "../services/views";
 import { verifyEvidence, verifyReport } from "../services/evidence";
-import { prepare, nextQuestion, evaluate } from "../providers/mock";
-import { publish } from "../domain/controller";
-import type { State, PlanContent } from "../domain/types";
+import { nextQuestion, evaluate } from "../providers/mock";
+import { publish, applyCoaching, budgetReached } from "../domain/controller";
+import type {
+  State,
+  PlanContent,
+  Question,
+  ReportContent,
+  Coaching,
+} from "../domain/types";
+import {
+  prepareProject,
+  coachAnswer,
+  conversationQuestion,
+  coachingReport,
+  engineFor,
+  verifyCoach,
+} from "../providers/coach";
+import { ModelFailure } from "../providers/structured";
+import type { FileCard } from "../services/retrieval";
 export async function claim(): Promise<Job | null> {
   const token = randomUUID();
   const rows = await db.$queryRaw<Job[]>`
@@ -102,11 +118,45 @@ export async function runJob(
       throw new Error("Injected dependency failure");
     const plan = session?.plan.content as unknown as PlanContent;
     const state = session?.state as unknown as State;
-    const result = version
-      ? prepare(version.brief, version.contribution, evidence)
-      : job.kind === "evaluate_session"
-        ? evaluate(state, plan)
-        : nextQuestion(state, plan, evidence);
+    let result: PlanContent | Question | ReportContent | undefined;
+    let preparedModelId = "",
+      finishing = false,
+      feedback: Coaching | undefined;
+    let preparedMap: FileCard[] | undefined;
+    if (version) {
+      const prepared = await prepareProject(
+        job,
+        version.brief,
+        version.contribution,
+        evidence,
+      );
+      result = prepared.plan;
+      preparedModelId = prepared.modelId;
+      preparedMap = prepared.fileMap;
+    } else {
+      if (state.coachMode && state.pendingAnswerId) {
+        feedback = await coachAnswer(
+          job,
+          state,
+          plan,
+          evidence,
+          session!.plan.modelId,
+          (session!.version.fileMap as unknown as FileCard[]) ?? undefined,
+        );
+        verifyCoach(feedback, state, evidence);
+        finishing =
+          !applyCoaching(state, plan, feedback) ||
+          budgetReached(state, session!.mode, Date.now());
+      }
+      if (job.kind === "evaluate_session")
+        result = state.coachMode
+          ? coachingReport(state, plan)
+          : evaluate(state, plan);
+      else if (!finishing)
+        result = state.coachMode
+          ? conversationQuestion(state, plan, evidence, feedback)
+          : nextQuestion(state, plan, evidence);
+    }
     // A controlled publication barrier lets integration tests exercise actual
     // race orderings without depending on CI machine speed.
     if (options.beforeCommit) await options.beforeCommit;
@@ -146,12 +196,18 @@ export async function runJob(
         let resultId: string;
         if (version) {
           const prepared = await tx.plan.create({
-            data: { versionId: version.id, revision: 1, content: json(result) },
+            data: {
+              versionId: version.id,
+              revision: 1,
+              content: json(result),
+              modelId: preparedModelId,
+              promptVersion: "coaching-v2",
+            },
           });
           resultId = prepared.id;
           await tx.version.update({
             where: { id: version.id },
-            data: { status: "ready" },
+            data: { status: "ready", fileMap: json(preparedMap) },
           });
         } else {
           const current = await tx.session.findUnique({
@@ -173,7 +229,13 @@ export async function runJob(
             const report = result as ReturnType<typeof evaluate>;
             verifyReport(report, state, evidence);
             const created = await tx.report.create({
-              data: { sessionId: current.id, content: json(report) },
+              data: {
+                sessionId: current.id,
+                content: json(report),
+                engine: state.coachMode
+                  ? engineFor(session!.plan.modelId, evidence)
+                  : "legacy_mock",
+              },
             });
             state.reportId = created.id;
             state.currentQuestion = null;
@@ -187,6 +249,20 @@ export async function runJob(
               },
             });
             resultId = created.id;
+          } else if (finishing) {
+            const revision = current.revision + 1;
+            await tx.session.update({
+              where: { id: current.id },
+              data: { status: "evaluating", revision, state: json(state) },
+            });
+            await tx.job.create({
+              data: {
+                ownerId: job.ownerId,
+                entityId: current.id,
+                kind: "evaluate_session",
+                expectedRevision: revision,
+              },
+            });
           } else {
             const question = result as ReturnType<typeof nextQuestion>;
             publish(state, question, Date.now());
@@ -227,23 +303,32 @@ export async function runJob(
       },
       { timeout: 15000 },
     );
-  } catch {
+  } catch (error) {
     await db.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${job.ownerId}, 0))`;
       const current = await tx.job.findFirst({
         where: { id: job.id, leaseToken: job.leaseToken, status: "running" },
       });
       if (!current) return;
-      const terminal = current.attempts >= 3;
+      const terminal =
+        current.attempts >= 3 ||
+        (error instanceof ModelFailure && !error.retryable);
       await tx.job.update({
         where: { id: job.id },
         data: {
           status: terminal ? "failed" : "queued",
           leaseToken: null,
           leaseUntil: null,
-          errorCode: "DEPENDENCY_UNAVAILABLE",
+          errorCode:
+            error instanceof ModelFailure
+              ? error.code
+              : "DEPENDENCY_UNAVAILABLE",
           runAfter: new Date(
-            Date.now() + Math.min(10000, 500 * 2 ** current.attempts),
+            Date.now() +
+              Math.max(
+                error instanceof ModelFailure ? error.retryAfterMs : 0,
+                Math.min(10000, 500 * 2 ** current.attempts),
+              ),
           ),
         },
       });

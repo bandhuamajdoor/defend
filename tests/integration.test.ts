@@ -1,9 +1,19 @@
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  afterEach,
+  describe,
+  it,
+  expect,
+  vi,
+} from "vitest";
 import { randomUUID } from "node:crypto";
 import { db } from "../src/db/client";
 import { handle } from "../src/services/api";
 import { claim, runJob, runOne, maintain } from "../src/jobs/runner";
 import { validate } from "../src/domain/contracts";
+import { structured, ModelFailure } from "../src/providers/structured";
+import { validateBackend } from "../src/providers/runtime";
 import type {
   Operation,
   ProjectDTO,
@@ -71,6 +81,10 @@ beforeAll(async () => {
 afterAll(async () => {
   await db.owner.deleteMany({ where: { id: { in: owners } } });
   await db.$disconnect();
+});
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 describe.sequential("real PostgreSQL API + worker flow", () => {
   it("creates isolated sample and validates every public DTO against contracts", async () => {
@@ -284,8 +298,15 @@ describe.sequential("real PostgreSQL API + worker flow", () => {
     expect(session.status).toBe("completed");
     const report = await alice.call(`/sessions/${session.id}/report`);
     const r = validate<ReportDTO>("Report", report.data);
-    expect(r.content.criteria.every((c) => c.status === "not_assessed")).toBe(
-      true,
+    expect(r.rubricVersion).toBe("v2-guided_sample");
+    for (const criterion of r.content.criteria) {
+      if (criterion.status === "not_assessed")
+        expect(criterion.answerQuotes).toEqual([]);
+      else expect(criterion.answerQuotes.length).toBeGreaterThan(0);
+    }
+    expect(session.coaching?.length).toBeGreaterThan(0);
+    expect(new Set(session.coaching?.map((c) => c.answerId)).size).toBe(
+      session.coaching?.length,
     );
     expect(r.evidence.length).toBeGreaterThan(0);
     expect((await bob.call(`/sessions/${session.id}`)).status).toBe(404);
@@ -361,3 +382,162 @@ describe.sequential("real PostgreSQL API + worker flow", () => {
     ).toBe(1);
   });
 });
+describe.sequential(
+  "free model boundaries — transport is stubbed; no external inference",
+  () => {
+    const response = {
+      verdict: "promising",
+      summary: "Name the data flow explicitly.",
+      strengths: ["You named a component."],
+      improvements: ["Trace one input through the handler."],
+      exampleAnswer: null,
+      recommendation: "retry",
+      nextQuestion: "What input does that handler receive?",
+      evidenceIds: [],
+    };
+    async function modelJob() {
+      return db.job.create({
+        data: {
+          ownerId: alice.cookie ? owners[0] : owners[1],
+          entityId: randomUUID(),
+          kind: "prepare_project",
+          expectedRevision: 1,
+          status: "running",
+          leaseToken: randomUUID(),
+          leaseUntil: new Date(Date.now() + 120000),
+        },
+      });
+    }
+    function groq() {
+      vi.stubEnv("MODEL_PROVIDER", "groq");
+      vi.stubEnv("MODEL_NAME", "openai/gpt-oss-20b");
+      vi.stubEnv("GROQ_API_KEY", "fixture-key");
+      vi.stubEnv("MODEL_FREE_TIER_ONLY", "true");
+    }
+    it("validates strict Groq output and stops at the configured entity allowance", async () => {
+      groq();
+      vi.stubEnv("MODEL_SESSION_REQUEST_LIMIT", "1");
+      const job = await modelJob();
+      const transport = vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              choices: [{ message: { content: JSON.stringify(response) } }],
+              usage: { prompt_tokens: 100, completion_tokens: 50 },
+            }),
+            { status: 200 },
+          ),
+      );
+      vi.stubGlobal("fetch", transport);
+      expect(
+        await structured(
+          job,
+          "CoachResponse",
+          "Trusted coaching instructions",
+          { answer: "Synthetic test answer" },
+        ),
+      ).toEqual(response);
+      const sent = JSON.parse(
+        (transport.mock.calls[0] as unknown as [string, RequestInit])[1]
+          .body as string,
+      );
+      expect(sent.response_format.json_schema.strict).toBe(true);
+      expect((transport.mock.calls[0] as unknown as [string])[0]).toBe(
+        "https://api.groq.com/openai/v1/chat/completions",
+      );
+      await expect(
+        structured(job, "CoachResponse", "Trusted instructions", {}),
+      ).rejects.toMatchObject({ code: "RATE_LIMITED", retryable: false });
+      expect(transport).toHaveBeenCalledTimes(1);
+      expect(
+        await db.modelCall.findFirst({ where: { jobId: job.id } }),
+      ).toMatchObject({
+        status: "completed",
+        inputTokens: 100,
+        outputTokens: 50,
+      });
+    });
+    it("does not substitute sample feedback for malformed provider output", async () => {
+      groq();
+      const job = await modelJob();
+      const transport = vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              choices: [{ message: { content: '{"invalid":true}' } }],
+            }),
+            { status: 200 },
+          ),
+      );
+      vi.stubGlobal("fetch", transport);
+      await expect(
+        structured(job, "CoachResponse", "Trusted instructions", {}),
+      ).rejects.toBeInstanceOf(ModelFailure);
+      expect(transport).toHaveBeenCalledTimes(1);
+      expect(
+        await db.modelCall.findFirst({ where: { jobId: job.id } }),
+      ).toMatchObject({ status: "failed" });
+    });
+    it("uses only the local Ollama endpoint and rejects cloud configuration", async () => {
+      vi.stubEnv("MODEL_PROVIDER", "ollama");
+      vi.stubEnv("MODEL_NAME", "local-fixture");
+      vi.stubEnv("MODEL_BASE_URL", "http://127.0.0.1:11434");
+      const job = await modelJob();
+      const transport = vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              message: { content: JSON.stringify(response) },
+              prompt_eval_count: 80,
+              eval_count: 40,
+            }),
+            { status: 200 },
+          ),
+      );
+      vi.stubGlobal("fetch", transport);
+      expect(
+        await structured(job, "CoachResponse", "Trusted instructions", {}),
+      ).toEqual(response);
+      const [url, options] = transport.mock.calls[0] as unknown as [
+        string,
+        RequestInit,
+      ];
+      expect(url).toBe("http://127.0.0.1:11434/api/chat");
+      expect(options.headers).not.toHaveProperty("Authorization");
+      expect(JSON.parse(options.body as string)).toMatchObject({
+        stream: false,
+        options: { num_ctx: 8192 },
+      });
+      vi.stubEnv("MODEL_BASE_URL", "https://untrusted.invalid");
+      expect(() => validateBackend()).toThrow(/loopback/);
+      vi.stubEnv("MODEL_BASE_URL", "http://127.0.0.1:11434");
+      vi.stubEnv("MODEL_NAME", "model:cloud");
+      expect(() => validateBackend()).toThrow(/local model/);
+    });
+    it("prepares a 500-file project and reports the actual review scope", async () => {
+      const files = Array.from({ length: 500 }, (_, i) => ({
+        path: `src/features/feature-${i}.ts`,
+        text: `export function feature${i}(n: number) { return n + ${i}; }`,
+      }));
+      const op = await alice.call("/projects", "POST", {
+        title: "Large synthetic project",
+        brief: "Many feature modules for a retrieval-scale fixture.",
+        contribution: "I wrote the feature functions.",
+        consent: true,
+        files,
+      });
+      expect(op.status).toBe(202);
+      await drain();
+      const project = validate<ProjectDTO>(
+        "Project",
+        (await alice.call(`/projects/${op.data.resourceId}`)).data,
+      );
+      expect(project.versions[0].files).toHaveLength(500);
+      expect(project.versions[0].plan?.content.coverage).toMatchObject({
+        indexedFiles: 500,
+        indexedExcerpts: 500,
+        reviewedExcerpts: 0,
+      });
+    });
+  },
+);

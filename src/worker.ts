@@ -1,6 +1,7 @@
 import { db } from "./db/client";
 import { checkConfig } from "./services/config";
 import { runOne, maintain } from "./jobs/runner";
+import { runtimeInfo } from "./providers/runtime";
 checkConfig();
 let stopped = false;
 let nextMaintenance = 0;
@@ -9,9 +10,7 @@ for (const signal of ["SIGINT", "SIGTERM"])
   process.on(signal, () => {
     stopped = true;
   });
-console.log(
-  "Defend worker ready · deterministic mock mode · no provider calls",
-);
+console.log(`Defend worker ready · ${runtimeInfo().label}`);
 const concurrency = Math.max(
   1,
   Math.min(4, Number(process.env.WORKER_CONCURRENCY ?? 2)),

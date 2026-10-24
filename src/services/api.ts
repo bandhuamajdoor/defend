@@ -21,6 +21,8 @@ import { sample } from "../fixtures/sample";
 import { checkConfig, origin } from "./config";
 import { projectDTO, sessionDTO, reportDTO, evidenceDTO } from "./views";
 import { exportHTML } from "./export";
+import { uploadLimits } from "../domain/upload-limits";
+import { runtimeInfo, validateBackend } from "../providers/runtime";
 const day = 86400000;
 const uuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -91,9 +93,9 @@ async function body(req: Request) {
     400,
   );
   requireThat(
-    Number(req.headers.get("content-length") ?? 0) <= 2097152,
+    Number(req.headers.get("content-length") ?? 0) <= uploadLimits.requestBytes,
     "LIMIT_EXCEEDED",
-    "Request exceeds 2 MiB.",
+    "Request exceeds 24 MiB.",
     413,
   );
   const reader = req.body?.getReader();
@@ -104,9 +106,9 @@ async function body(req: Request) {
       const part = await reader.read();
       if (part.done) break;
       size += part.value.byteLength;
-      if (size > 2097152) {
+      if (size > uploadLimits.requestBytes) {
         await reader.cancel();
-        throw new AppError("LIMIT_EXCEEDED", "Request exceeds 2 MiB.", 413);
+        throw new AppError("LIMIT_EXCEEDED", "Request exceeds 24 MiB.", 413);
       }
       parts.push(part.value);
     }
@@ -172,6 +174,14 @@ async function addVersion(
   isSample = false,
 ) {
   const parsed = ingest(input);
+  const runtime = runtimeInfo();
+  validateBackend();
+  requireThat(
+    runtime.provider === "mock" ||
+      input.consentVersion === runtime.consentVersion,
+    "INVALID_INPUT",
+    "Please review and accept the current model-provider disclosure.",
+  );
   if (projectId) await getProject(tx, ownerId, projectId);
   else {
     requireThat(
@@ -206,6 +216,7 @@ async function addVersion(
       brief: input.brief,
       contribution: input.contribution,
       contentHash: parsed.contentHash,
+      consentVersion: runtime.consentVersion,
       files: { create: parsed.files },
     },
   });
@@ -254,7 +265,7 @@ async function newSession(
       planId,
       mode,
       parentReportId,
-      state: json(initialState()),
+      state: json({ ...initialState(), coachMode: true, coaching: [] }),
     },
   });
   const j = await enqueue(tx, ownerId, "generate_turn", s.id, 0);
@@ -278,10 +289,19 @@ async function mutation(
       ),
     };
   if (area === "projects" && id === "sample" && method === "POST") {
-    validate("ConsentRequest", input);
+    const consent = validate<{ consent: true; consentVersion?: string }>(
+      "ConsentRequest",
+      input,
+    );
     return {
       code: 202,
-      data: await addVersion(tx, ownerId, sample, undefined, true),
+      data: await addVersion(
+        tx,
+        ownerId,
+        { ...sample, consentVersion: consent.consentVersion },
+        undefined,
+        true,
+      ),
     };
   }
   if (area === "projects" && id) {
@@ -343,6 +363,8 @@ async function mutation(
             summary: b.summary,
             contribution: b.contribution,
           }),
+          modelId: plan.modelId,
+          promptVersion: plan.promptVersion,
           confirmedAt: new Date(),
         },
       });
@@ -423,6 +445,8 @@ async function mutation(
           mode: "retest",
           revision: 1,
           content: json(retest),
+          modelId: s.plan.modelId,
+          promptVersion: s.plan.promptVersion,
           confirmedAt: new Date(),
         },
       });
@@ -454,7 +478,11 @@ async function mutation(
         turnId: b.turnId,
         text: b.text,
         topicId: state.currentQuestion?.topicId ?? "",
-        assisted: state.clarifications > 0,
+        assisted:
+          state.clarifications > 0 ||
+          !!state.coaching?.some(
+            (f) => f.topicId === state.currentQuestion?.topicId,
+          ),
       };
       status = accept(
         state,
@@ -658,6 +686,27 @@ async function read(ownerId: string, path: string[], req: Request) {
   }
   if (area === "sessions" && id) {
     const s = await getSession(db, ownerId, id);
+    if (action === "evidence") {
+      const ids = [
+        ...new Set(new URL(req.url).searchParams.get("ids")?.split(",") ?? []),
+      ];
+      requireThat(
+        ids.length > 0 && ids.length <= 12 && ids.every((i) => uuid.test(i)),
+        "INVALID_INPUT",
+        "Choose up to 12 source references.",
+      );
+      const evidence = await db.evidence.findMany({
+        where: { id: { in: ids }, versionId: s.versionId },
+        include: { file: true },
+      });
+      requireThat(
+        evidence.length === ids.length,
+        "NOT_FOUND",
+        "Source context not found.",
+        404,
+      );
+      return NextResponse.json({ evidence: evidence.map(evidenceDTO) });
+    }
     if (!action) {
       const job = await db.job.findFirst({
         where: { entityId: s.id, ownerId },
@@ -737,11 +786,20 @@ async function read(ownerId: string, path: string[], req: Request) {
 }
 export async function handle(req: Request) {
   try {
-    checkConfig();
     const path = new URL(req.url).pathname
       .replace(/^\/api\/v1\/?/, "")
       .split("/")
       .filter(Boolean);
+    if (path[0] === "capabilities" && req.method === "GET") {
+      let ready = true;
+      try {
+        validateBackend();
+      } catch {
+        ready = false;
+      }
+      return NextResponse.json({ ...runtimeInfo(), ready, uploadLimits });
+    }
+    checkConfig();
     if (path[0] === "health") {
       const heartbeat = await db.workerHeartbeat.findUnique({
         where: { id: "worker" },
